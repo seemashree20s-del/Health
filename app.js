@@ -1,0 +1,421 @@
+// Core State Management and Logic Architecture
+const app = {
+    // Current application state
+    state: {
+        currentUser: null,
+        currentSessionId: null,
+        authMode: 'login' // 'login', 'register', 'forgot'
+    },
+
+    // Initialization
+    init() {
+        this.checkAuthStatus();
+        this.setupBindings();
+        
+        // Listeners for enabling send button
+        document.getElementById('chat-input').addEventListener('input', (e) => {
+            const btn = document.getElementById('send-btn');
+            btn.disabled = e.target.value.trim().length === 0;
+        });
+
+        // Handle Browser Forward/Back Button history navigation natively
+        window.addEventListener('popstate', (e) => {
+            const state = e.state;
+            if (state && state.view) {
+                this.navigate(state.view, true); // true = prevent cyclical pushes
+            } else {
+                this.navigate('landing', true);
+            }
+        });
+    },
+
+    // Navigation and View Management
+    navigate(viewName, isPopState = false) {
+        if (viewName === 'login' || viewName === 'register') {
+            this.state.authMode = viewName;
+            viewName = 'auth';
+        }
+
+        // Push history state if this wasn't triggered by a back/forward button PopState event
+        if (!isPopState) {
+            window.history.pushState({ view: viewName }, '', `#${viewName}`);
+        }
+        
+        document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+        document.getElementById(`view-${viewName}`).classList.add('active');
+
+        if (viewName === 'auth') {
+            this.renderAuthUI();
+        } else if (viewName === 'dashboard') {
+            this.loadDashboard();
+        }
+    },
+
+    // Utility: Show Loader momentarily
+    showLoader(callback) {
+        const loader = document.getElementById('global-loader');
+        loader.classList.remove('hidden');
+        setTimeout(() => {
+            loader.classList.add('hidden');
+            if (callback) callback();
+        }, 800);
+    },
+
+    // ---------------- AUTHENTICATION ----------------
+    checkAuthStatus() {
+        const user = localStorage.getItem('hs_currentUser');
+        if (user) {
+            this.state.currentUser = JSON.parse(user);
+            this.navigate('dashboard');
+        } else {
+            this.navigate('landing');
+        }
+    },
+
+    toggleAuthMode() {
+        this.state.authMode = this.state.authMode === 'login' ? 'register' : 'login';
+        this.renderAuthUI();
+    },
+
+    toggleForgotMode() {
+         this.state.authMode = 'forgot';
+         this.renderAuthUI();
+    },
+
+    renderAuthUI() {
+        const nameGroup = document.getElementById('name-group');
+        const emailGroup = document.getElementById('email-group');
+        const pwdGroup = document.getElementById('password-group');
+        const nameInput = document.getElementById('name');
+        const pwdInput = document.getElementById('password');
+        const forgotLink = document.getElementById('forgot-link');
+        
+        const title = document.getElementById('auth-title');
+        const subtitle = document.getElementById('auth-subtitle');
+        const toggleText = document.getElementById('auth-toggle-text');
+        const submitBtn = document.getElementById('auth-submit-btn');
+
+        document.getElementById('auth-error').innerText = '';
+        document.getElementById('auth-success').innerText = '';
+
+        if (this.state.authMode === 'login') {
+            nameGroup.classList.add('hidden');
+            pwdGroup.classList.remove('hidden');
+            forgotLink.classList.remove('hidden');
+            
+            nameInput.removeAttribute('required');
+            pwdInput.setAttribute('required', 'true');
+            
+            title.innerText = 'Welcome Back';
+            subtitle.innerText = 'Log in to continue your health journey.';
+            submitBtn.innerText = 'Log In';
+            toggleText.innerHTML = `Don't have an account? <span class="link" onclick="app.toggleAuthMode()">Register here</span>`;
+            
+        } else if (this.state.authMode === 'register') {
+            nameGroup.classList.remove('hidden');
+            pwdGroup.classList.remove('hidden');
+            forgotLink.classList.add('hidden');
+            
+            nameInput.setAttribute('required', 'true');
+            pwdInput.setAttribute('required', 'true');
+            
+            title.innerText = 'Create Account';
+            subtitle.innerText = 'Start your intelligent health tracking.';
+            submitBtn.innerText = 'Register';
+            toggleText.innerHTML = `Already have an account? <span class="link" onclick="app.toggleAuthMode()">Log In</span>`;
+            
+        } else if (this.state.authMode === 'forgot') {
+             nameGroup.classList.add('hidden');
+             pwdGroup.classList.add('hidden');
+             forgotLink.classList.add('hidden');
+             
+             nameInput.removeAttribute('required');
+             pwdInput.removeAttribute('required');
+             
+             title.innerText = 'Reset Password';
+             subtitle.innerText = 'Enter your email to receive a reset link.';
+             submitBtn.innerText = 'Send Reset Link';
+             toggleText.innerHTML = `Remembered your password? <span class="link" onclick="app.toggleAuthMode()">Log In</span>`;
+        }
+    },
+
+    handleAuth(e) {
+        e.preventDefault();
+        const email = document.getElementById('email').value.trim();
+        const password = document.getElementById('password')?.value.trim();
+        const errEl = document.getElementById('auth-error');
+        const successEl = document.getElementById('auth-success');
+
+        this.showLoader(() => {
+            let users = JSON.parse(localStorage.getItem('hs_users') || '[]');
+            errEl.innerText = '';
+            successEl.innerText = '';
+
+            if (this.state.authMode === 'login') {
+                // Login Flow
+                const user = users.find(u => u.email === email && u.password === password);
+                if (user) {
+                    this.setSession(user);
+                } else {
+                    errEl.innerText = 'Invalid email or password.';
+                }
+            } else if (this.state.authMode === 'register') {
+                // Register Flow
+                const name = document.getElementById('name').value.trim();
+                const exists = users.find(u => u.email === email);
+                if (exists) {
+                    errEl.innerText = 'Email already registered.';
+                } else {
+                    const newUser = { id: Date.now().toString(), name, email, password, premium: false };
+                    users.push(newUser);
+                    localStorage.setItem('hs_users', JSON.stringify(users));
+                    this.setSession(newUser);
+                }
+            } else if (this.state.authMode === 'forgot') {
+                // Forgot Password Flow
+                const exists = users.find(u => u.email === email);
+                if (exists) {
+                    successEl.innerText = 'If this email belongs to an account, a reset link was sent.';
+                    setTimeout(() => {
+                        this.state.authMode = 'login';
+                        this.renderAuthUI();
+                    }, 2500);
+                } else {
+                    // For security, show the same message instead of revealing non-registered emails
+                    successEl.innerText = 'If this email belongs to an account, a reset link was sent.';
+                }
+            }
+        });
+    },
+
+    setSession(user) {
+        // Strip out password for current user storage
+        const safeUser = { id: user.id, name: user.name, email: user.email };
+        localStorage.setItem('hs_currentUser', JSON.stringify(safeUser));
+        this.state.currentUser = safeUser;
+        document.getElementById('auth-form').reset();
+        this.navigate('dashboard');
+    },
+
+    logout() {
+        this.showLoader(() => {
+            localStorage.removeItem('hs_currentUser');
+            this.state.currentUser = null;
+            this.state.currentSessionId = null;
+            this.navigate('landing');
+        });
+    },
+
+    // ---------------- DASHBOARD & CHAT HISTORY ----------------
+    loadDashboard() {
+        document.getElementById('display-user-name').innerText = this.state.currentUser.name;
+        this.refreshSidebar();
+        
+        // If no current session, ensure welcome screen is shown
+        if (!this.state.currentSessionId) {
+            this.renderEmptyChat();
+        } else {
+            this.loadSpecificSession(this.state.currentSessionId);
+        }
+    },
+
+    refreshSidebar() {
+        const sessions = JSON.parse(localStorage.getItem('hs_sessions') || '[]');
+        const userSessions = sessions.filter(s => s.userId === this.state.currentUser.id).sort((a,b)=> b.timestamp - a.timestamp);
+        
+        const list = document.getElementById('session-list');
+        list.innerHTML = '';
+        
+        userSessions.forEach(session => {
+            const li = document.createElement('li');
+            li.className = `session-item ${session.id === this.state.currentSessionId ? 'active' : ''}`;
+            li.onclick = () => this.loadSpecificSession(session.id);
+            li.innerHTML = `<i class="fa-solid fa-message"></i> ${session.title}`;
+            list.appendChild(li);
+        });
+    },
+
+    createNewSession() {
+        this.state.currentSessionId = null;
+        this.refreshSidebar();
+        this.renderEmptyChat();
+    },
+
+    renderEmptyChat() {
+        document.getElementById('current-chat-title').innerText = 'New Consultation';
+        const chatArea = document.getElementById('chat-messages');
+        chatArea.innerHTML = `
+            <div class="chat-welcome">
+                <i class="fa-solid fa-robot welcome-icon"></i>
+                <h3>How can I guide you today?</h3>
+                <p>Describe your symptoms such as fever, headache, cold, or stomach pain, and I'll ask follow-up questions to understand better.</p>
+                <div class="suggestion-chips">
+                    <button class="chip" onclick="app.sendSuggested('I have a severe headache')">Severe headache</button>
+                    <button class="chip" onclick="app.sendSuggested('I am feeling feverish and cold')">Feeling feverish</button>
+                    <button class="chip" onclick="app.sendSuggested('My stomach hurts after eating')">Stomach hurts</button>
+                </div>
+            </div>
+        `;
+    },
+
+    loadSpecificSession(sessionId) {
+        this.state.currentSessionId = sessionId;
+        this.refreshSidebar();
+        
+        // Get title
+        const sessions = JSON.parse(localStorage.getItem('hs_sessions') || '[]');
+        const targetSession = sessions.find(s => s.id === sessionId);
+        if(targetSession) document.getElementById('current-chat-title').innerText = targetSession.title;
+
+        // Fetch msgs
+        const allMessages = JSON.parse(localStorage.getItem('hs_messages') || '[]');
+        const thread = allMessages.filter(m => m.sessionId === sessionId).sort((a,b)=> a.timestamp - b.timestamp);
+        
+        const chatArea = document.getElementById('chat-messages');
+        chatArea.innerHTML = '';
+        thread.forEach(msg => {
+            this.appendMessageToDOM(msg.sender, msg.text, msg.timestamp, msg.buttons);
+        });
+        this.scrollToBottom();
+    },
+
+    // ---------------- CHAT INTERACTION LOGIC ----------------
+    sendSuggested(text) {
+        const input = document.getElementById('chat-input');
+        input.value = text;
+        document.getElementById('send-btn').disabled = false;
+        document.getElementById('chat-form').dispatchEvent(new Event('submit'));
+    },
+
+    sendMessage(e) {
+        e.preventDefault();
+        const input = document.getElementById('chat-input');
+        const text = input.value.trim();
+        if(!text) return;
+
+        input.value = '';
+        document.getElementById('send-btn').disabled = true;
+
+        // Create new session if required
+        if (!this.state.currentSessionId) {
+            const sessions = JSON.parse(localStorage.getItem('hs_sessions') || '[]');
+            const newSession = {
+                id: Date.now().toString(),
+                userId: this.state.currentUser.id,
+                title: text.length > 20 ? text.substring(0,20)+'...' : text,
+                timestamp: Date.now()
+            };
+            sessions.push(newSession);
+            localStorage.setItem('hs_sessions', JSON.stringify(sessions));
+            this.state.currentSessionId = newSession.id;
+            
+            // Clear welcome screen
+            document.getElementById('chat-messages').innerHTML = '';
+            document.getElementById('current-chat-title').innerText = newSession.title;
+            this.refreshSidebar();
+        }
+
+        // Save and Append User Message
+        const msgTime = Date.now();
+        this.saveMessage('user', text, msgTime);
+        this.appendMessageToDOM('user', text, msgTime);
+        this.scrollToBottom();
+
+        // Trigger AI Agent Response Simulation via DB
+        this.simulateAIResponse(text);
+    },
+
+    saveMessage(sender, text, timestamp, buttons = null) {
+        const msgs = JSON.parse(localStorage.getItem('hs_messages') || '[]');
+        msgs.push({
+            id: Date.now().toString() + Math.random(),
+            sessionId: this.state.currentSessionId,
+            sender,
+            text,
+            timestamp,
+            buttons
+        });
+        localStorage.setItem('hs_messages', JSON.stringify(msgs));
+    },
+
+    appendMessageToDOM(sender, text, timestamp, buttons = null) {
+        const chatArea = document.getElementById('chat-messages');
+        const div = document.createElement('div');
+        div.className = `message ${sender}`;
+        
+        const timeStr = new Date(timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        
+        // Escape rudimentary HTML for safety
+        let safeText = text.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+
+        // Parse newlines to br if needed (though pre-wrap usually handles it, explicit br is safer)
+        safeText = safeText.replace(/\n/g, "<br>");
+        
+        let extras = '';
+        if (buttons && Array.isArray(buttons) && buttons.length > 0) {
+            const btnHtml = buttons.map(b => `<button class="chip" onclick="app.sendSuggested('${b.replace(/'/g, "\\'")}')">${b}</button>`).join('');
+            extras = `<div class="suggestion-chips" style="justify-content: flex-start; margin-top: 0.5rem; gap: 0.5rem;">${btnHtml}</div>`;
+        }
+
+        div.innerHTML = `
+            <div class="msg-bubble">${safeText}</div>
+            ${extras}
+            <div class="msg-time">${timeStr}</div>
+        `;
+        chatArea.appendChild(div);
+    },
+
+    scrollToBottom() {
+        const chatArea = document.getElementById('chat-messages');
+        chatArea.scrollTop = chatArea.scrollHeight;
+    },
+
+    // ---------------- MOCK AI SYMPTOM ENGINE ----------------
+    // Generates permutations via KnowledgeBase API
+    simulateAIResponse(userText) {
+        const chatArea = document.getElementById('chat-messages');
+        
+        // Add Typing Indicator
+        const typingDiv = document.createElement('div');
+        typingDiv.className = 'message bot';
+        typingDiv.id = 'typing-indicator';
+        typingDiv.innerHTML = `
+            <div class="msg-bubble typing">
+                <span></span><span></span><span></span>
+            </div>
+        `;
+        chatArea.appendChild(typingDiv);
+        this.scrollToBottom();
+
+        setTimeout(() => {
+            // Remove typing indicator
+            document.getElementById('typing-indicator')?.remove();
+            
+            // Get rich analysis from Knowledge Base
+            const analysis = window.KnowledgeBase.analyze(userText);
+            
+            // Append main response bubble
+            const msgTime = Date.now();
+            this.saveMessage('bot', analysis.text, msgTime, analysis.followUps);
+            this.appendMessageToDOM('bot', analysis.text, msgTime, analysis.followUps);
+
+            this.scrollToBottom();
+            
+        }, 1200 + Math.random() * 800); // Dynamic typing delay
+    },
+
+    // ---------------- PREMIUM SYSTEM ----------------
+    handlePremiumSignup() {
+         this.showLoader(() => {
+             alert('Thank you for upgrading! Your account is now Premium.');
+             this.navigate('dashboard');
+             
+             // Optionally update local storage user tier here
+         });
+    },
+
+    setupBindings() {}
+};
+
+// Start application
+document.addEventListener('DOMContentLoaded', () => app.init());

@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HealthSymphony | AI Health Guidance</title>
+    <link rel="stylesheet" href="style.css">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Inter:wght@400;500&display=swap"
+        rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+</head>
+
+<body>
+    <div id="app">
+        <!-- Loader -->
+        <div id="global-loader" class="loader-overlay hidden">
+            <div class="loader-spinner"></div>
+            <p>Processing...</p>
+        </div>
+
+        <!-- Landing View -->
+        <div id="view-landing" class="view active">
+            <nav class="navbar">
+                <div class="logo">
+                    <i class="fa-solid fa-notes-medical"></i> HealthSymphony
+                </div>
+                <div class="nav-links">
+                    <button class="btn btn-outline" onclick="app.navigate('login')">Sign In</button>
+                    <button class="btn btn-primary" onclick="app.navigate('register')">Sign Up</button>
+                    <button class="btn premium-btn-nav" onclick="app.navigate('premium')"><i class="fa-solid fa-crown"></i> Get Premium</button>
+                </div>
+            </nav>
+            <main class="hero">
+                <div class="hero-content">
+                    <div class="badge">✨ Intelligent Symptom Analysis</div>
+                    <h1>Your Personal Health <span class="gradient-text">Companion</span></h1>
+                    <p>Get quick, intelligent health guidance and self-care suggestions online. Our AI chatbot analyzes
+                        your symptoms and provides structured, basic assistance instantly.</p>
+                    <div class="hero-actions">
+                        <button class="btn btn-lg btn-primary" onclick="app.navigate('register')">Start Free
+                            Consultation <i class="fa-solid fa-arrow-right"></i></button>
+                    </div>
+                </div>
+                <div class="hero-visual">
+                    <div class="glass-card mockup">
+                        <img src="https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80" alt="AI Healthcare Chatbot" class="hero-image">
+                        <div class="mockup-header mt-1 text-center">
+                            <i class="fa-solid fa-robot text-primary"></i> Powered by Advanced AI
+                        </div>
+                    </div>
+                </div>
+            </main>
+            <div class="disclaimer-banner">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+                <p><strong>Disclaimer:</strong> This chatbot provides general health information for educational
+                    purposes only. It is <strong>NOT</strong> a substitute for professional medical advice, diagnosis,
+                    or treatment. Always seek the advice of your physician.</p>
+            </div>
+            
+            <!-- Global Footer -->
+            <footer class="app-footer">
+                <div class="footer-content">
+                    <div class="footer-brand">
+                        <div class="logo"><i class="fa-solid fa-notes-medical"></i> HealthSymphony</div>
+                        <p class="text-muted text-sm mt-1">Empowering you with quick, intelligent health guidance.</p>
+                    </div>
+                    <div class="footer-details">
+                        <h4>Contact Details</h4>
+                        <ul>
+                            <li><i class="fa-solid fa-user"></i> Name: Shameela and Team</li>
+                            <li><i class="fa-solid fa-location-dot"></i> Location: Salem</li>
+                            <li><i class="fa-solid fa-phone"></i> Contact Phone: 6383649156</li>
+                            <li><i class="fa-solid fa-envelope"></i> Email: shameela5qts@gmail.com</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="footer-bottom text-center text-sm text-muted">
+                    <p>&copy; 2026 HealthSymphony. All rights reserved.</p>
+                </div>
+            </footer>
+        </div>
+
+        <!-- Auth Views (Login / Register) -->
+        <div id="view-auth" class="view">
+            <div class="auth-container glass-card">
+                <button class="back-btn" onclick="app.navigate('landing')"><i class="fa-solid fa-arrow-left"></i>
+                    Back</button>
+                <div class="auth-header">
+                    <div class="logo"><i class="fa-solid fa-notes-medical"></i> HealthSymphony</div>
+                    <h2 id="auth-title">Welcome Back</h2>
+                    <p id="auth-subtitle">Log in to continue your health journey.</p>
+                </div>
+
+                <form id="auth-form" onsubmit="app.handleAuth(event)">
+                    <div class="input-group hidden" id="name-group">
+                        <label for="name">Full Name</label>
+                        <input type="text" id="name" placeholder="John Doe">
+                    </div>
+                    <div class="input-group" id="email-group">
+                        <label for="email">Email Address</label>
+                        <input type="email" id="email" required placeholder="name@example.com">
+                    </div>
+                    <div class="input-group" id="password-group">
+                        <label for="password">Password</label>
+                        <input type="password" id="password" required placeholder="••••••••">
+                    </div>
+                    <div class="forgot-pwd text-right hidden" id="forgot-link">
+                        <span class="link text-sm" onclick="app.toggleForgotMode()">Forgot Password?</span>
+                    </div>
+                    <p class="error-text" id="auth-error"></p>
+                    <p class="success-text" id="auth-success"></p>
+                    <button type="submit" class="btn btn-primary btn-block" id="auth-submit-btn">Log In</button>
+                </form>
+                
+                <div class="auth-footer text-center">
+                    <p id="auth-toggle-text">Don't have an account? <span class="link" onclick="app.toggleAuthMode()">Register here</span></p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Chat Dashboard -->
+        <div id="view-dashboard" class="view">
+            <div class="dashboard-layout">
+                <!-- Sidebar -->
+                <aside class="sidebar">
+                    <div class="sidebar-header">
+                        <div class="logo"><i class="fa-solid fa-notes-medical"></i> HealthSymphony</div>
+                        <button class="new-chat-btn" onclick="app.createNewSession()">
+                            <i class="fa-solid fa-plus"></i> New Chat
+                        </button>
+                        <button class="premium-btn btn-block" onclick="app.navigate('premium')">
+                            <i class="fa-solid fa-crown"></i> Get Premium
+                        </button>
+                    </div>
+                    <div class="sidebar-content">
+                        <h3>Recent Consultations</h3>
+                        <ul class="session-list" id="session-list">
+                            <!-- Populated via JS -->
+                        </ul>
+                    </div>
+                    <div class="sidebar-footer">
+                        <div class="user-profile">
+                            <div class="avatar"><i class="fa-solid fa-user"></i></div>
+                            <div class="user-info">
+                                <span class="user-name" id="display-user-name">User Name</span>
+                            </div>
+                        </div>
+                        <button class="logout-btn" onclick="app.logout()" title="Log Out"><i
+                                class="fa-solid fa-sign-out-alt"></i></button>
+                    </div>
+                </aside>
+
+                <!-- Chat Area -->
+                <main class="chat-area">
+                    <div class="chat-header">
+                        <h2 id="current-chat-title">New Consultation</h2>
+                        <div class="disclaimer-mini">
+                            <i class="fa-solid fa-circle-info"></i> For informational purposes only. Not medical advice.
+                        </div>
+                    </div>
+
+                    <div class="chat-messages" id="chat-messages">
+                        <!-- Populated via JS -->
+                        <div class="chat-welcome">
+                            <i class="fa-solid fa-robot welcome-icon"></i>
+                            <h3>How can I guide you today?</h3>
+                            <p>Describe your symptoms such as fever, headache, cold, or stomach pain, and I'll ask
+                                follow-up questions to understand better.</p>
+                            <div class="suggestion-chips mt-1">
+                                <button class="chip" onclick="app.sendSuggested('I have a severe headache')">Severe
+                                    headache</button>
+                                <button class="chip"
+                                    onclick="app.sendSuggested('I am feeling feverish and cold')">Feeling
+                                    feverish</button>
+                                <button class="chip"
+                                    onclick="app.sendSuggested('My stomach hurts after eating')">Stomach hurts</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="chat-input-wrapper">
+                        <form id="chat-form" class="chat-input-box" onsubmit="app.sendMessage(event)">
+                            <input type="text" id="chat-input" placeholder="Describe your symptoms..."
+                                autocomplete="off">
+                            <button type="submit" class="send-btn" id="send-btn" disabled>
+                                <i class="fa-solid fa-paper-plane"></i>
+                            </button>
+                        </form>
+                        <div class="privacy-note">Secure & Private interaction. Data is stored locally.</div>
+                    </div>
+                </main>
+            </div>
+        </div>
+
+        <!-- Premium View -->
+        <div id="view-premium" class="view">
+            <div class="premium-container glass-card">
+                <button class="back-btn" onclick="app.navigate('dashboard')"><i class="fa-solid fa-arrow-left"></i> Back to Chat</button>
+                <div class="premium-header text-center">
+                    <i class="fa-solid fa-crown gradient-text" style="font-size: 3rem; margin-bottom: 1rem;"></i>
+                    <h2>Upgrade to HealthSymphony Premium</h2>
+                    <p>Unlock advanced features and personalized long-term tracking.</p>
+                </div>
+                
+                <div class="premium-features">
+                    <ul class="feature-list">
+                        <li><i class="fa-solid fa-check text-success"></i> <strong>Unlimited Consultations:</strong> No daily message limits.</li>
+                        <li><i class="fa-solid fa-check text-success"></i> <strong>Priority AI Model:</strong> Access our most advanced reasoning model.</li>
+                        <li><i class="fa-solid fa-check text-success"></i> <strong>Health PDF Export:</strong> Export your chat history for your doctor.</li>
+                        <li><i class="fa-solid fa-check text-success"></i> <strong>Ad-Free Experience:</strong> 100% focus on your health guidance.</li>
+                    </ul>
+                </div>
+                
+                <div class="premium-action text-center mt-2">
+                    <div class="price-tag">
+                        <h3>$9.99<span class="text-sm">/month</span></h3>
+                    </div>
+                    <button class="btn btn-primary btn-lg" onclick="app.handlePremiumSignup()">Upgrade Now</button>
+                    <p class="text-muted mt-1" style="font-size: 0.8rem;">Cancel anytime. Secure checkout.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="knowledgeBase.js"></script>
+    <script src="app.js"></script>
+</body>
+
+</html>

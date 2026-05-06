@@ -1,0 +1,375 @@
+/* System Global Variables controlled by body[data-theme] */
+
+/* Default / Dark Theme - Ultra sleek midnight glowing neon (Inspired by Ref 1) */
+:root, [data-theme="dark"] {
+    --bg-body: radial-gradient(circle at 10% 20%, #0c081e 0%, #03000b 100%);
+    --bg-surface: rgba(18, 14, 43, 0.45);
+    --border-color: rgba(139, 92, 246, 0.15);
+    --border-highlight: rgba(34, 211, 238, 0.3);
+    
+    --text-main: #f8fafc;
+    --text-muted: #8b9bb4;
+    
+    --accent: #8b5cf6;
+    --accent-glow: #22d3ee;
+    --gradient-primary: linear-gradient(135deg, #a855f7 0%, #3b82f6 100%);
+    --gradient-hover: linear-gradient(135deg, #c084fc 0%, #60a5fa 100%);
+    
+    --bubble-bot-bg: rgba(26, 21, 60, 0.6);
+    --bubble-bot-text: #e2e8f0;
+    --bubble-user-bg: var(--gradient-primary);
+    --bubble-user-text: #ffffff;
+    
+    --input-bg: rgba(9, 6, 22, 0.6);
+    --input-border: rgba(139, 92, 246, 0.4);
+    
+    --shadow-sm: 0 4px 30px rgba(139, 92, 246, 0.15);
+    --shadow-lg: 0 10px 40px rgba(34, 211, 238, 0.2);
+    --glass-filter: blur(24px) saturate(150%);
+    --glow-effect: drop-shadow(0 0 12px rgba(139, 92, 246, 0.5));
+    --btn-hover-effect: translateY(-3px) scale(1.02);
+    
+    --border-radius: 24px;
+    --border-radius-btn: 12px;
+}
+
+/* Light Theme - Clean minimalist frosted glass (Inspired by Ref 3) */
+[data-theme="light"] {
+    --bg-body: linear-gradient(135deg, #f4f6fb 0%, #e8ecf8 100%);
+    --bg-surface: rgba(255, 255, 255, 0.7);
+    --border-color: rgba(255, 255, 255, 0.8);
+    --border-highlight: rgba(139, 92, 246, 0.2);
+    
+    --text-main: #1e293b;
+    --text-muted: #64748b;
+    
+    --accent: #6366f1;
+    --accent-glow: #a855f7;
+    --gradient-primary: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+    --gradient-hover: linear-gradient(135deg, #818cf8 0%, #c084fc 100%);
+    
+    --bubble-bot-bg: #ffffff;
+    --bubble-bot-text: #334155;
+    --bubble-user-bg: var(--gradient-primary);
+    --bubble-user-text: #ffffff;
+    
+    --input-bg: rgba(255, 255, 255, 0.9);
+    --input-border: rgba(99, 102, 241, 0.2);
+    
+    --shadow-sm: 0 8px 30px rgba(0, 0, 0, 0.04);
+    --shadow-lg: 0 20px 50px rgba(99, 102, 241, 0.1);
+    --glass-filter: blur(20px) saturate(120%);
+    --glow-effect: drop-shadow(0 4px 15px rgba(99, 102, 241, 0.2));
+    --btn-hover-effect: translateY(-3px) scale(1.02);
+    
+    --border-radius: 28px;
+    --border-radius-btn: 14px;
+}
+
+/* Neon Theme - Deep cyberpunk glow */
+[data-theme="neon"] {
+    --bg-body: #050510;
+    --bg-surface: rgba(10, 10, 20, 0.7);
+    --border-color: rgba(236, 72, 153, 0.3);
+    --border-highlight: rgba(34, 211, 238, 0.5);
+    
+    --text-main: #f0fdf4;
+    --text-muted: #67e8f9;
+    
+    --accent: #22d3ee;
+    --accent-glow: #ec4899;
+    --gradient-primary: linear-gradient(45deg, #0ea5e9, #ec4899, #8b5cf6);
+    --gradient-hover: linear-gradient(45deg, #38bdf8, #f472b6, #a855f7);
+    
+    --bubble-bot-bg: rgba(15, 15, 25, 0.8);
+    --bubble-bot-text: #f0fdf4;
+    --bubble-user-bg: var(--gradient-primary);
+    --bubble-user-text: #ffffff;
+    
+    --input-bg: #000000;
+    --input-border: rgba(236, 72, 153, 0.5);
+    
+    --shadow-sm: 0 0 20px rgba(34, 211, 238, 0.2);
+    --shadow-lg: 0 0 35px rgba(236, 72, 153, 0.4);
+    --glass-filter: blur(10px);
+    --glow-effect: drop-shadow(0 0 15px rgba(236, 72, 153, 0.6));
+    --btn-hover-effect: scale(1.03);
+    
+    --border-radius: 12px;
+    --border-radius-btn: 6px;
+}
+
+/* Soft Pastel Theme - Calming lavenders and peaches */
+[data-theme="pastel"] {
+    --bg-body: linear-gradient(135deg, #fff5f5 0%, #f3e8ff 100%);
+    --bg-surface: rgba(255, 255, 255, 0.7);
+    --border-color: rgba(216, 180, 254, 0.4);
+    --border-highlight: rgba(253, 164, 175, 0.2);
+    
+    --text-main: #475569;
+    --text-muted: #94a3b8;
+    
+    --accent: #d946ef;
+    --accent-glow: #fb7185;
+    --gradient-primary: linear-gradient(135deg, #fda4af 0%, #c084fc 100%);
+    --gradient-hover: linear-gradient(135deg, #fecdd3 0%, #d8b4fe 100%);
+    
+    --bubble-bot-bg: rgba(255, 255, 255, 0.9);
+    --bubble-bot-text: #475569;
+    --bubble-user-bg: var(--gradient-primary);
+    --bubble-user-text: #ffffff;
+    
+    --input-bg: rgba(255, 255, 255, 0.8);
+    --input-border: rgba(216, 180, 254, 0.6);
+    
+    --shadow-sm: 0 10px 40px rgba(192, 132, 252, 0.08);
+    --shadow-lg: 0 15px 50px rgba(192, 132, 252, 0.15);
+    --glass-filter: blur(25px) saturate(110%);
+    --glow-effect: drop-shadow(0 4px 15px rgba(216, 180, 254, 0.2));
+    --btn-hover-effect: translateY(-4px) scale(1.02);
+    
+    --border-radius: 40px;
+    --border-radius-btn: 20px;
+}
+
+/* Zen Minimal Theme - Extremely sleek and comfortable clean profile */
+[data-theme="minimal"] {
+    --bg-body: #fafafa;
+    --bg-surface: #ffffff;
+    --border-color: #f4f4f5;
+    --border-highlight: rgba(0, 0, 0, 0);
+    
+    --text-main: #27272a;
+    --text-muted: #a1a1aa;
+    
+    --accent: #52525b;
+    --accent-glow: #71717a;
+    --gradient-primary: linear-gradient(135deg, #27272a 0%, #52525b 100%);
+    --gradient-hover: linear-gradient(135deg, #3f3f46 0%, #71717a 100%);
+    
+    --bubble-bot-bg: #f4f4f5;
+    --bubble-bot-text: #27272a;
+    --bubble-user-bg: var(--gradient-primary);
+    --bubble-user-text: #ffffff;
+    
+    --input-bg: #ffffff;
+    --input-border: #e4e4e7;
+    
+    --shadow-sm: 0 2px 10px rgba(0, 0, 0, 0.02);
+    --shadow-lg: 0 10px 30px rgba(0, 0, 0, 0.05);
+    --glass-filter: blur(0px); /* Solid, clean look */
+    --glow-effect: none;
+    --btn-hover-effect: translateY(-2px);
+    
+    --border-radius: 16px;
+    --border-radius-btn: 8px;
+}
+
+/* Base Body Styles */
+body {
+    background: var(--bg-body);
+    color: var(--text-main);
+    transition: background 0.6s cubic-bezier(0.2, 0.8, 0.2, 1), color 0.4s ease;
+    -webkit-font-smoothing: antialiased;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+::-webkit-scrollbar-track {
+    background: var(--bg-body); 
+}
+::-webkit-scrollbar-thumb {
+    background: var(--border-color); 
+    border-radius: 10px;
+}
+::-webkit-scrollbar-thumb:hover {
+    background: var(--accent); 
+}
+
+/* Universal Shared Components */
+.glass-panel {
+    background: var(--bg-surface);
+    backdrop-filter: var(--glass-filter);
+    -webkit-backdrop-filter: var(--glass-filter);
+    border: 1px solid var(--border-color);
+    box-shadow: var(--shadow-sm);
+    border-radius: var(--border-radius);
+    transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+    position: relative;
+    overflow: hidden;
+}
+
+/* Animated Border Glow Injection for Glass Panels */
+.glass-panel::before {
+    content: '';
+    position: absolute;
+    top: 0; left: -100%; width: 50%; height: 100%;
+    background: linear-gradient(90deg, transparent, var(--border-highlight), transparent);
+    transform: skewX(-20deg);
+    opacity: 0;
+    transition: opacity 0.3s;
+    pointer-events: none;
+}
+
+.glass-panel:hover {
+    box-shadow: var(--shadow-lg);
+    border-color: var(--accent);
+    transform: translateY(-2px);
+}
+
+.glass-panel:hover::before {
+    animation: shine 1.5s infinite;
+    opacity: 0.2;
+}
+
+@keyframes shine {
+    0% { left: -100%; }
+    100% { left: 200%; }
+}
+
+.gradient-text-universal {
+    background: var(--gradient-primary);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    display: inline-block;
+    animation: gradientShift 6s ease infinite;
+    background-size: 200% 200%;
+}
+
+@keyframes gradientShift {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+/* Stunning Interactive Inputs */
+.u-input {
+    background: var(--input-bg);
+    border: 1px solid var(--input-border);
+    color: var(--text-main);
+    border-radius: var(--border-radius-btn);
+    box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);
+    transition: all 0.3s ease;
+    font-family: inherit;
+    padding: 0.8rem 1.2rem;
+}
+
+.u-input:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.2), inset 0 2px 4px rgba(0,0,0,0.05);
+    background: var(--bg-surface);
+}
+
+/* Premium Animated Buttons */
+.u-btn {
+    background: var(--gradient-primary);
+    background-size: 200% 200%;
+    color: #fff;
+    border: none;
+    border-radius: var(--border-radius-btn);
+    box-shadow: var(--shadow-sm);
+    transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+    cursor: pointer;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    position: relative;
+    overflow: hidden;
+    z-index: 1;
+}
+
+.u-btn::after {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: var(--gradient-hover);
+    z-index: -1;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.u-btn:hover {
+    transform: var(--btn-hover-effect);
+    box-shadow: var(--shadow-lg);
+    background-position: 100% 50%;
+}
+
+.u-btn:hover::after {
+    opacity: 1;
+}
+
+/* Global Theme Switcher Wrapper */
+.theme-picker-overlay {
+    position: fixed;
+    bottom: 2rem;
+    left: 2rem;
+    z-index: 1000;
+}
+
+.theme-picker-btn {
+    background: var(--bg-surface);
+    backdrop-filter: var(--glass-filter);
+    border: 1px solid var(--border-color);
+    color: var(--text-main);
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    cursor: pointer;
+    box-shadow: var(--shadow-sm);
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+    font-size: 1.2rem;
+}
+
+.theme-picker-btn:hover {
+    transform: scale(1.1) rotate(15deg);
+    border-color: var(--accent);
+    color: var(--accent);
+}
+
+.theme-picker-menu {
+    position: absolute;
+    bottom: 65px;
+    left: 0;
+    background: var(--bg-surface);
+    backdrop-filter: var(--glass-filter);
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+    padding: 0.8rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    opacity: 0; pointer-events: none;
+    transform: translateY(15px) scale(0.95);
+    transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+    box-shadow: var(--shadow-lg);
+    transform-origin: bottom left;
+}
+
+.theme-picker-menu.show {
+    opacity: 1; pointer-events: auto; 
+    transform: translateY(0) scale(1);
+}
+
+.theme-option {
+    background: transparent;
+    border: none;
+    color: var(--text-main);
+    padding: 0.8rem 1.2rem;
+    cursor: pointer;
+    border-radius: 8px;
+    transition: all 0.2s;
+    display: flex; align-items: center; gap: 0.8rem;
+    white-space: nowrap;
+    font-weight: 500;
+}
+
+.theme-option:hover {
+    background: rgba(139, 92, 246, 0.15);
+    color: var(--accent);
+    transform: translateX(5px);
+}

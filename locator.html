@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HealthSymphony | Find Clinics & Hospitals</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    
+    <!-- Leaflet CSS for Map -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    
+    <link rel="stylesheet" href="themes.css">
+    <script src="themeManager.js"></script>
+
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { overflow: hidden; height: 100vh; display: flex; flex-direction: column; }
+        
+        .navbar { display: flex; align-items: center; justify-content: space-between; padding: 1rem 2rem; background: var(--bg-surface); border-bottom: 1px solid var(--border-color); backdrop-filter: var(--glass-filter); z-index: 1000; flex-shrink: 0; }
+        .logo { font-family: 'Outfit', sans-serif; font-weight: 800; font-size: 1.5rem; display: flex; align-items: center; gap: 0.5rem; cursor: pointer; color: var(--text-main); }
+        .logo i { color: var(--accent); }
+        .nav-links { display: flex; gap: 1.5rem; align-items: center; }
+        .nav-links a { color: var(--text-muted); text-decoration: none; font-weight: 500; transition: color 0.2s; }
+        .nav-links a:hover { color: var(--accent); }
+
+        .locator-layout { display: flex; flex: 1; overflow: hidden; position: relative; }
+        
+        /* Sidebar container */
+        .locator-sidebar { width: 420px; background: var(--bg-surface); border-right: 1px solid var(--border-color); display: flex; flex-direction: column; z-index: 10; flex-shrink: 0; backdrop-filter: var(--glass-filter); }
+        
+        .sidebar-header { padding: 1.5rem; border-bottom: 1px solid var(--border-color); display: flex; flex-direction: column; gap: 1rem; }
+        
+        /* Emergency Button */
+        .btn-emergency { background: linear-gradient(135deg, #ef4444, #dc2626); color: white; padding: 1rem; border-radius: var(--border-radius-btn); border: none; font-weight: 700; font-size: 1.05rem; display: flex; justify-content: center; align-items: center; gap: 0.8rem; cursor: pointer; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3); }
+        .btn-emergency:hover { transform: translateY(-3px); box-shadow: 0 10px 25px rgba(239, 68, 68, 0.4); filter: brightness(1.1); }
+        .btn-emergency.active { animation: pulseHeartbeat 1.5s infinite; }
+        
+        @keyframes pulseHeartbeat {
+            0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
+            50% { transform: scale(1.02); box-shadow: 0 0 0 15px rgba(239, 68, 68, 0); }
+            100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+        }
+
+        /* Search & Detection */
+        .search-box { position: relative; display: flex; align-items: center; }
+        .search-input { width: 100%; padding: 0.9rem 1rem 0.9rem 2.8rem; border-radius: var(--border-radius-btn); border: 1px solid var(--input-border); background: var(--input-bg); color: var(--text-main); font-family: 'Inter', sans-serif; transition: all 0.2s; }
+        .search-input:focus { outline: none; border-color: var(--accent); filter: var(--glow-effect); }
+        .search-icon { position: absolute; left: 1rem; color: var(--text-muted); }
+        .detect-btn { position: absolute; right: 0.5rem; background: transparent; border: none; color: var(--accent); cursor: pointer; padding: 0.5rem; border-radius: 50%; display: flex; align-items: center; justify-content: center; transition: all 0.2s; }
+        .detect-btn:hover { background: rgba(139, 92, 246, 0.1); }
+
+        /* Filters */
+        .filters-wrap { display: flex; gap: 0.5rem; overflow-x: auto; padding-bottom: 0.5rem; margin-top: 0.5rem; scrollbar-width: none; }
+        .filters-wrap::-webkit-scrollbar { display: none; }
+        .filter-chip { padding: 0.4rem 1rem; background: transparent; border: 1px solid var(--border-color); border-radius: 20px; color: var(--text-muted); font-size: 0.85rem; cursor: pointer; white-space: nowrap; transition: all 0.2s; }
+        .filter-chip:hover, .filter-chip.active { background: rgba(139, 92, 246, 0.1); border-color: var(--accent); color: var(--accent); }
+
+        /* Listing Area & Images */
+        .listing-area { flex: 1; overflow-y: auto; padding: 1rem; display: flex; flex-direction: column; gap: 1rem; position: relative; scrollbar-width: thin; }
+        
+        .facility-card { background: var(--input-bg); border: 1px solid var(--input-border); border-radius: var(--border-radius); padding: 1rem; cursor: pointer; transition: all 0.2s; position: relative; display: flex; gap: 1rem; align-items: stretch; overflow: hidden;}
+        .facility-card:hover, .facility-card.active { border-color: var(--accent); transform: translateY(-2px); box-shadow: var(--shadow-sm); filter: var(--glow-effect); }
+        .facility-card.top-emergency { border: 2px solid #ef4444; box-shadow: 0 0 15px rgba(239, 68, 68, 0.4); animation: redPulse 2s infinite; }
+        
+        @keyframes redPulse { 0%, 100% { box-shadow: 0 0 15px rgba(239, 68, 68, 0.4); } 50% { box-shadow: 0 0 25px rgba(239, 68, 68, 0.8); } }
+        
+        .fac-content { flex: 1; display: flex; flex-direction: column; justify-content: space-between; position: relative; }
+        
+        .fac-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.5rem; }
+        .fac-name { font-family: 'Outfit', sans-serif; font-size: 1.1rem; font-weight: 700; color: var(--text-main); line-height: 1.2; padding-right: 2rem; }
+        .fac-type { display: inline-block; padding: 0.2rem 0.6rem; border-radius: 10px; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
+        .type-hospital { background: rgba(59, 130, 246, 0.1); color: #3b82f6; }
+        .type-clinic { background: rgba(16, 185, 129, 0.1); color: #10b981; }
+        .type-emergency { background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid #ef4444; }
+        
+        .fac-rating { color: #f59e0b; font-size: 0.85rem; display: flex; align-items: center; gap: 0.3rem; margin-top: 0.4rem; font-weight: 600; }
+        .fac-reviews { color: var(--text-muted); font-weight: 400; }
+        
+        .fac-details { margin-top: 1rem; display: flex; flex-direction: column; gap: 0.5rem; font-size: 0.9rem; color: var(--text-muted); }
+        .fac-detail-row { display: flex; align-items: flex-start; gap: 0.6rem; }
+        .fac-detail-row i { margin-top: 0.2rem; width: 14px; text-align: center; color: var(--accent); }
+        
+        .fac-status { font-weight: 600; }
+        .status-open { color: #10b981; }
+        .status-closed { color: #ef4444; }
+        
+        .fac-actions { display: flex; gap: 0.8rem; margin-top: 1.2rem; }
+        .btn-call { flex: 1; background: var(--gradient-primary); color: white; border: none; padding: 0.6rem; border-radius: 8px; font-weight: 600; cursor: pointer; transition: filter 0.2s; display: flex; align-items: center; justify-content: center; gap: 0.5rem; }
+        .btn-call:hover { filter: brightness(1.1); }
+        .btn-route { flex: 1; background: transparent; border: 1px solid var(--accent); color: var(--accent); padding: 0.6rem; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 0.5rem; }
+        .btn-route:hover { background: rgba(139, 92, 246, 0.1); }
+
+        .fav-btn { position: absolute; top: 1.2rem; right: 1.2rem; background: transparent; border: none; color: var(--text-muted); cursor: pointer; font-size: 1.1rem; transition: all 0.2s; }
+        .fav-btn:hover, .fav-btn.saved { color: #ec4899; }
+
+        /* Map Area */
+        .map-container { flex: 1; position: relative; background: #e2e8f0; z-index: 1; }
+        #map { width: 100%; height: 100%; z-index: 1; }
+        
+        /* Loading & Permission Overlay */
+        .overlay-msg { position: absolute; inset: 0; background: var(--bg-surface); backdrop-filter: var(--glass-filter); z-index: 50; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 2rem; text-align: center; color: var(--text-main); transition: opacity 0.3s; }
+        .overlay-msg i { font-size: 3rem; color: var(--accent); margin-bottom: 1rem; }
+        .overlay-msg h2 { font-family: 'Outfit', sans-serif; margin-bottom: 0.5rem; }
+        .overlay-msg p { color: var(--text-muted); margin-bottom: 1.5rem; max-width: 400px; line-height: 1.5; }
+        
+        .loader-spinner { width: 40px; height: 40px; border: 3px solid var(--border-color); border-top-color: var(--accent); border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 1.5rem; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* Leaflet Popups mapping to Theme */
+        .leaflet-popup-content-wrapper { background: var(--bg-surface); color: var(--text-main); border: 1px solid var(--border-color); border-radius: var(--border-radius-btn); box-shadow: var(--shadow-sm); backdrop-filter: var(--glass-filter); }
+        .leaflet-popup-tip { background: var(--bg-surface); border: 1px solid var(--border-color); }
+        .custom-popup h3 { font-family: 'Outfit', sans-serif; font-size: 1.1rem; margin-bottom: 0.3rem; }
+        .custom-popup p { font-family: 'Inter', sans-serif; font-size: 0.85rem; color: var(--text-muted); margin: 0; }
+        .leaflet-container a.leaflet-popup-close-button { color: var(--text-muted); }
+
+        /* Detailed Modal */
+        .details-modal { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.8); backdrop-filter: var(--glass-filter); -webkit-backdrop-filter: var(--glass-filter); z-index: 2000; display: none; justify-content: center; align-items: center; padding: 1rem; opacity: 0; transition: opacity 0.3s; }
+        .details-content { background: var(--bg-surface); width: 100%; max-width: 600px; max-height: 90vh; border-radius: var(--border-radius); border: 1px solid var(--border-color); overflow-y: auto; box-shadow: var(--shadow-sm); display: flex; flex-direction: column; position: relative; }
+        .details-close { position: absolute; top: 1rem; right: 1rem; background: rgba(0,0,0,0.5); color: white; border: none; width: 35px; height: 35px; border-radius: 50%; display: flex; justify-content: center; align-items: center; cursor: pointer; z-index: 10; font-size: 1.2rem; transition: background 0.2s;}
+        .details-close:hover { background: #ef4444; }
+        
+        .modal-body { padding: 2.5rem 2rem 2rem 2rem; color: var(--text-main); }
+        .modal-title { font-size: 1.8rem; font-family: 'Outfit', sans-serif; font-weight: 800; margin-bottom: 0.5rem; }
+        
+        .services-tags { display: flex; flex-wrap: wrap; gap: 0.5rem; margin: 1.5rem 0; }
+        .s-tag { background: rgba(139, 92, 246, 0.1); color: var(--accent); padding: 0.4rem 0.8rem; border-radius: 20px; font-size: 0.85rem; font-weight: 600; border: 1px solid rgba(139, 92, 246, 0.3); }
+        
+        .modal-action-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 2rem; }
+        
+        @media (max-width: 768px) {
+            .locator-layout { flex-direction: column-reverse; }
+            .locator-sidebar { width: 100%; height: 50%; border-right: none; border-top: 1px solid var(--border-color); }
+            .map-container { height: 50%; }
+        }
+    </style>
+</head>
+<body>
+
+    <nav class="navbar">
+        <div class="logo" onclick="window.location.href='home.html'"><i class="fa-solid fa-notes-medical gradient-text-universal"></i> <span class="gradient-text-universal">HealthSymphony</span></div>
+        <div class="nav-links">
+            <a href="profile.html"><i class="fa-solid fa-user"></i> Dashboard</a>
+            <a href="chat.html"><i class="fa-solid fa-stethoscope"></i> AI Consult</a>
+            <a href="appointments.html"><i class="fa-solid fa-calendar-check"></i> Appointments</a>
+            <a href="support.html"><i class="fa-solid fa-headset"></i> Help & Support</a>
+            <a href="premium.html" style="color: #f59e0b;"><i class="fa-solid fa-crown"></i> Premium</a>
+        </div>
+    </nav>
+
+    <div class="locator-layout">
+
+        <!-- Sidebar List UI -->
+        <aside class="locator-sidebar">
+            <div class="sidebar-header">
+                <button class="btn-emergency" id="btn-emergency" onclick="toggleEmergencyMode()">
+                    <i class="fa-solid fa-truck-medical"></i> Find Nearest Emergency
+                </button>
+                
+
+                
+                <div style="display:flex; gap:0.5rem;">
+                    <select id="district-select" class="search-input" style="padding: 0.8rem 1rem; flex:1; appearance:none;" onchange="handleDistrictChange()">
+                        <option value="">🗺️ All Districts</option>
+                        <option value="ariyalur">Ariyalur</option>
+                        <option value="chengalpattu">Chengalpattu</option>
+                        <option value="chennai">Chennai</option>
+                        <option value="coimbatore">Coimbatore</option>
+                        <option value="cuddalore">Cuddalore</option>
+                        <option value="dharmapuri">Dharmapuri</option>
+                        <option value="dindigul">Dindigul</option>
+                        <option value="erode">Erode</option>
+                        <option value="kallakurichi">Kallakurichi</option>
+                        <option value="kancheepuram">Kancheepuram</option>
+                        <option value="kanniyakumari">Kanniyakumari</option>
+                        <option value="karur">Karur</option>
+                        <option value="krishnagiri">Krishnagiri</option>
+                        <option value="madurai">Madurai</option>
+                        <option value="mayiladuthurai">Mayiladuthurai</option>
+                        <option value="nagapattinam">Nagapattinam</option>
+                        <option value="namakkal">Namakkal</option>
+                        <option value="perambalur">Perambalur</option>
+                        <option value="pudukkottai">Pudukkottai</option>
+                        <option value="ramanathapuram">Ramanathapuram</option>
+                        <option value="ranipet">Ranipet</option>
+                        <option value="salem">Salem</option>
+                        <option value="sivaganga">Sivaganga</option>
+                        <option value="tenkasi">Tenkasi</option>
+                        <option value="thanjavur">Thanjavur</option>
+                        <option value="nilgiris">The Nilgiris</option>
+                        <option value="theni">Theni</option>
+                        <option value="thiruvallur">Thiruvallur</option>
+                        <option value="thiruvarur">Thiruvarur</option>
+                        <option value="thoothukkudi">Thoothukkudi</option>
+                        <option value="tiruchirappalli">Tiruchirappalli</option>
+                        <option value="tirunelveli">Tirunelveli</option>
+                        <option value="tirupathur">Tirupathur</option>
+                        <option value="tiruppur">Tiruppur</option>
+                        <option value="tiruvannamalai">Tiruvannamalai</option>
+                        <option value="vellore">Vellore</option>
+                        <option value="viluppuram">Viluppuram</option>
+                        <option value="virudhunagar">Virudhunagar</option>
+                    </select>
+                </div>
+                
+                <div class="filters-wrap">
+                    <button class="filter-chip active" onclick="applyFilter('all', this)">All</button>
+                    <button class="filter-chip" onclick="applyFilter('government', this)">Government</button>
+                    <button class="filter-chip" onclick="applyFilter('private', this)">Private</button>
+                    <button class="filter-chip" onclick="applyFilter('emergency', this)">Emergency</button>
+                    <button class="filter-chip" onclick="applyFilter('hospital', this)">Hospitals</button>
+                    <button class="filter-chip" onclick="applyFilter('clinic', this)">Clinics</button>
+                </div>
+            </div>
+
+            <div class="listing-area" id="listing-area">
+                <!-- Initial State overlay inside list -->
+                <div class="overlay-msg" id="list-overlay">
+                    <i class="fa-solid fa-map-location-dot"></i>
+                    <h2>Location Required</h2>
+                    <p>We need your location to find the nearest hospitals and clinics. Your privacy is protected.</p>
+                    <button class="u-btn" style="padding: 0.8rem 1.5rem;" onclick="requestUserLocation()">Enable Location Service</button>
+                </div>
+            </div>
+        </aside>
+        
+        <!-- Map Area -->
+        <main class="map-container">
+            <div id="map"></div>
+        </main>
+
+    </div>
+
+    <!-- Detailed Facility Overlay Modal -->
+    <div class="details-modal" id="details-modal">
+        <div class="details-content">
+            <button class="details-close" onclick="closeDetailsModal()"><i class="fa-solid fa-xmark"></i></button>
+            <div class="modal-body">
+                <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+                    <div>
+                        <h2 class="modal-title" id="m-title">Hospital Name</h2>
+                        <span class="fac-type type-hospital" id="m-type"><i class="fa-solid fa-hospital"></i> Hospital</span>
+                    </div>
+                    <div style="text-align:right;">
+                        <div class="fac-rating" style="font-size: 1.2rem;" id="m-rating"><i class="fa-solid fa-star"></i> 4.5</div>
+                        <div class="fac-reviews" id="m-reviews">(120 Reviews)</div>
+                    </div>
+                </div>
+
+                <div class="fac-details" style="margin-top: 1.5rem;">
+                    <div class="fac-detail-row"><i class="fa-solid fa-location-dot"></i> <span id="m-address">123 Street Name, Area</span> <strong style="color:var(--text-main); margin-left:auto;" id="m-distance">2.1 km away</strong></div>
+                    <div class="fac-detail-row"><i class="fa-solid fa-clock"></i> <span id="m-status">Open Now - 24/7 Hours</span></div>
+                    <div class="fac-detail-row"><i class="fa-solid fa-phone"></i> <span id="m-contact">+91 999999999</span></div>
+                </div>
+
+                <div class="services-tags" id="m-services">
+                    <div class="s-tag">Emergency Care</div>
+                    <div class="s-tag">Pharmacy</div>
+                    <div class="s-tag">ICU</div>
+                    <div class="s-tag">General Checkup</div>
+                </div>
+
+                <div class="modal-action-grid">
+                    <button class="btn-call" id="m-call-btn" style="padding: 1rem; font-size:1.1rem;"><i class="fa-solid fa-phone"></i> Call Now</button>
+                    <button class="btn-route" id="m-route-btn" style="padding: 1rem; font-size:1.1rem;"><i class="fa-solid fa-diamond-turn-right"></i> Navigate</button>
+                </div>
+                
+                <button class="u-btn" style="background:transparent; border:1px solid var(--text-muted); color:var(--text-main); width:100%; margin-top:1rem; padding:0.8rem;" id="m-share-btn">
+                    <i class="fa-solid fa-share-nodes"></i> Share Location
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- FIREBASE COMPAT SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
+    <script>
+        const firebaseConfig = {
+          apiKey: "AIzaSyAgJ01RHrpzywI_EG2whluBDyj7kGvlQLw",
+          authDomain: "healthcare-chatbot-8b131.firebaseapp.com",
+          databaseURL: "https://healthcare-chatbot-8b131-default-rtdb.asia-southeast1.firebasedatabase.app/",
+          projectId: "healthcare-chatbot-8b131",
+          storageBucket: "healthcare-chatbot-8b131.firebasestorage.app",
+          messagingSenderId: "414500073416",
+          appId: "1:414500073416:web:a22115813f5e96922edafd",
+          measurementId: "G-B7KM52WJP0"
+        };
+        if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+        }
+        const db = firebase.database();
+        const currentUser = JSON.parse(localStorage.getItem('hs_currentUser'));
+        if (!currentUser) { window.location.href = 'login.html'; }
+    </script>
+    
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="locator.js"></script>
+    <script>
+        // Auth handling UI updates
+        if (currentUser) { 
+            const displayUser = document.getElementById('display-user-name');
+            if(displayUser) displayUser.innerText = currentUser.name; 
+            
+            // Premium Check
+            if (currentUser.isPremium) {
+                const premiumBtn = document.querySelector('.btn-premium');
+                if(premiumBtn) {
+                    premiumBtn.innerHTML = '<i class="fa-solid fa-check"></i> <span style="margin-left: 0.3rem;">Premium Active</span>';
+                    premiumBtn.style.background = 'linear-gradient(135deg, #10b981, #059669)';
+                    premiumBtn.style.color = 'white';
+                    premiumBtn.style.pointerEvents = 'none';
+                }
+            }
+        }
+        
+        function logout() {
+            localStorage.removeItem('hs_currentUser');
+            window.location.href = 'home.html';
+        }
+    </script>
+</body>
+</html>

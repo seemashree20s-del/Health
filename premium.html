@@ -1,0 +1,779 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HealthSymphony | Premium Subscription</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="themes.css">
+    <script src="themeManager.js"></script>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { background: var(--bg-body); font-family: 'Inter', sans-serif; color: var(--text-main); overflow-x: hidden; }
+        
+        .navbar { display: flex; align-items: center; justify-content: space-between; padding: 1.5rem 5%; background: var(--bg-surface); border-bottom: 1px solid var(--border-color); backdrop-filter: var(--glass-filter); }
+        .logo { font-family: 'Outfit', sans-serif; font-weight: 800; font-size: 1.5rem; display: flex; align-items: center; gap: 0.5rem; cursor: pointer; color: var(--text-main); }
+        .logo i { color: var(--accent); }
+        
+        .container { max-width: 1200px; margin: 0 auto; padding: 5rem 2rem; }
+        .header { text-align: center; margin-bottom: 4rem; }
+        .header h1 { font-family: 'Outfit', sans-serif; font-size: 3.5rem; font-weight: 800; margin-bottom: 1rem; letter-spacing: -1px; }
+        .header p { font-size: 1.2rem; color: var(--text-muted); max-width: 600px; margin: 0 auto; line-height: 1.6; }
+
+        .plans-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 2.5rem; position: relative; z-index: 10; margin-top: 3rem; }
+        
+        .plan-card { background: var(--bg-surface); backdrop-filter: var(--glass-filter); -webkit-backdrop-filter: var(--glass-filter); border-radius: var(--border-radius); padding: 3rem 2.5rem; border: 1px solid var(--border-color); position: relative; transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); box-shadow: var(--shadow-sm); display: flex; flex-direction: column; z-index: 2; overflow: hidden; }
+        .plan-card:hover { transform: translateY(-10px); box-shadow: 0 30px 60px rgba(0,0,0,0.1); filter: var(--glow-effect); }
+        
+        /* The Shining Gradient Border for Pro */
+        .plan-recommended { border: none; transform: translateY(-15px); }
+        .plan-recommended::before { content: ""; position: absolute; inset: 0; border-radius: var(--border-radius); padding: 3px; background: var(--gradient-primary); -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0); mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0); -webkit-mask-composite: xor; mask-composite: exclude; z-index: -1; }
+        .plan-recommended:hover { transform: translateY(-20px); }
+        
+        .recommended-badge { position: absolute; top: 0; left: 50%; transform: translate(-50%, -50%); background: var(--gradient-primary); color: #fff; padding: 0.6rem 2rem; border-radius: 30px; font-weight: 700; font-size: 0.85rem; letter-spacing: 2px; text-transform: uppercase; white-space: nowrap; box-shadow: 0 10px 20px rgba(0,0,0,0.15); z-index: 5; }
+        
+        .plan-title { font-family: 'Outfit', sans-serif; font-size: 2.2rem; font-weight: 800; margin-bottom: 0.5rem; color: var(--text-main); }
+        .plan-desc { color: var(--text-muted); font-size: 1rem; margin-bottom: 2rem; min-height: 2.5rem; line-height: 1.6; }
+        
+        .plan-price-wrap { display: flex; align-items: baseline; gap: 0.4rem; margin-bottom: 2rem; }
+        .plan-price { font-size: 4rem; font-weight: 800; color: var(--text-main); letter-spacing: -2px; }
+        .plan-duration { font-size: 1.1rem; color: var(--text-muted); font-weight: 500; }
+        
+        .plan-features { list-style: none; padding: 0; margin-bottom: 3rem; flex: 1; display: flex; flex-direction: column; gap: 1.2rem; }
+        .plan-features li { display: flex; align-items: flex-start; gap: 1rem; color: var(--text-main); font-size: 1.05rem; line-height: 1.5; font-weight: 500; }
+        .plan-features i { color: var(--accent); margin-top: 0.2rem; font-size: 1.2rem; filter: drop-shadow(0 2px 5px rgba(0,0,0,0.1)); }
+        .plan-features .fa-xmark { color: var(--border-color); filter: none; }
+        
+        .btn { width: 100%; padding: 1.2rem; border-radius: var(--border-radius-btn); font-weight: 700; font-size: 1.1rem; cursor: pointer; border: none; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); text-align: center; }
+        .btn-outline { background: transparent; border: 2px solid var(--input-border); color: var(--text-main); }
+        .btn-outline:hover { border-color: var(--accent); background: rgba(139, 92, 246, 0.1); }
+        .btn-primary { background: var(--gradient-primary); color: white; box-shadow: var(--shadow-sm); }
+        .btn-primary:hover { transform: var(--btn-hover-effect); }
+
+        /* Dynamic Billing Toggle */
+        .billing-toggle-wrapper { display: flex; justify-content: center; align-items: center; margin-bottom: 3rem; gap: 1rem; position: relative; z-index: 10; }
+        .billing-label { font-size: 1.1rem; font-weight: 600; color: var(--text-muted); transition: color 0.3s; cursor: pointer; }
+        .billing-label.active { color: var(--text-main); }
+        .toggle-switch { width: 64px; height: 34px; background: var(--input-bg); border: 2px solid var(--input-border); border-radius: 34px; position: relative; cursor: pointer; transition: all 0.3s; box-shadow: inset 0 2px 6px rgba(0,0,0,0.1); }
+        .toggle-switch::after { content: ''; position: absolute; top: 3px; left: 3px; width: 24px; height: 24px; background: var(--gradient-primary); border-radius: 50%; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
+        .billing-toggle-wrapper.yearly .toggle-switch::after { transform: translateX(30px); }
+        .save-badge { background: rgba(16, 185, 129, 0.1); color: #10b981; padding: 0.3rem 0.8rem; border-radius: 20px; font-size: 0.8rem; font-weight: 700; position: absolute; right: -80px; top: -10px; border: 1px solid rgba(16, 185, 129, 0.3); animation: bounce 2s infinite; }
+        
+        @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
+
+        /* Abstract Background Orbs for Pricing */
+        .pricing-orbs { position: absolute; width: 100%; height: 100%; top: 0; left: 0; overflow: hidden; z-index: 0; pointer-events: none; }
+        .orb { position: absolute; border-radius: 50%; filter: blur(80px); opacity: 0.5; z-index: 0; }
+        .orb-1 { width: 400px; height: 400px; background: var(--accent); top: 10%; right: -5%; animation: float 15s infinite alternate ease-in-out; }
+        .orb-2 { width: 500px; height: 500px; background: var(--border-color); bottom: -10%; left: -10%; animation: float 20s infinite alternate-reverse ease-in-out; }
+        @keyframes float { 0% { transform: translate(0, 0) scale(1); } 100% { transform: translate(30px, -40px) scale(1.1); } }
+
+        /* Advanced Checkout Modal */
+        /* Advanced Checkout Modal */
+        .checkout-overlay { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.8); backdrop-filter: var(--glass-filter); -webkit-backdrop-filter: var(--glass-filter); z-index: 1000; display: none; justify-content: center; align-items: center; padding: 1rem; opacity: 0; transition: opacity 0.4s; }
+        .checkout-modal { background: var(--bg-surface); border: 1px solid var(--border-color); border-radius: var(--border-radius); width: 100%; max-width: 550px; position: relative; max-height: 90vh; box-shadow: var(--shadow-sm); transform: translateY(20px); transition: transform 0.4s; overflow: hidden; display: flex; flex-direction: column; }
+        .modal-header { padding: 2rem 2.5rem 1rem 2.5rem; border-bottom: 1px solid var(--border-color); position: relative; }
+        .close-modal { position: absolute; top: 1.5rem; right: 1.5rem; cursor: pointer; font-size: 1.5rem; color: var(--text-muted); transition: color 0.2s; }
+        .close-modal:hover { color: var(--accent); }
+        
+        .modal-body { padding: 2rem 2.5rem; overflow-y: auto; position: relative; }
+
+        .modal-title { font-family: 'Outfit', sans-serif; font-size: 1.6rem; font-weight: 700; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.8rem; color: var(--text-main); }
+        .back-step { color: var(--text-muted); cursor: pointer; display: none; transition: color 0.2s; }
+        .back-step:hover { color: var(--accent); }
+        
+        /* Summary Card */
+        .summary-card { background: rgba(139, 92, 246, 0.05); border-radius: 16px; padding: 1.5rem; border: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; box-shadow: var(--shadow-sm); }
+        .summary-detail h4 { font-family: 'Outfit', sans-serif; color: var(--text-main); font-size: 1.3rem; margin-bottom: 0.2rem; }
+        .summary-detail p { color: var(--text-muted); font-weight: 500; font-size: 0.9rem; }
+        .summary-price { font-size: 2rem; font-weight: 800; color: var(--accent); }
+
+        /* Step Containers */
+        .step-container { display: none; animation: slideIn 0.3s forwards; }
+        .step-container.active { display: block; }
+        @keyframes slideIn { from { opacity: 0; transform: translateX(20px); } to { opacity: 1; transform: translateX(0); } }
+
+        /* Form Inputs */
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.2rem; margin-bottom: 1.5rem;}
+        .form-group.full { grid-column: span 2; }
+        .form-group label { display: block; font-weight: 600; font-size: 0.9rem; margin-bottom: 0.6rem; color: var(--text-main); }
+        .form-input { width: 100%; padding: 1rem; border: 1px solid var(--input-border); border-radius: var(--border-radius-btn); font-family: 'Inter', sans-serif; font-size: 1rem; transition: all 0.2s; background: var(--input-bg); color: var(--text-main); }
+        .form-input:focus { outline: none; border-color: var(--accent); filter: var(--glow-effect); }
+        .error-msg { color: #ef4444; font-size: 0.85rem; margin-top: 0.4rem; display: none; font-weight: 500; }
+
+        /* Attractive UI Options */
+        .option-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+        .option-card { background: var(--input-bg); border: 1px solid var(--input-border); border-radius: 16px; padding: 1.5rem; text-align: center; cursor: pointer; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); display: flex; flex-direction: column; align-items: center; gap: 0.8rem; position: relative; overflow: hidden; }
+        .option-card i { font-size: 2rem; color: var(--text-muted); transition: color 0.3s; }
+        .option-card img { width: 40px; height: 40px; object-fit: contain; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1)); }
+        .option-card span { font-weight: 600; color: var(--text-main); font-size: 1rem; transition: color 0.3s; }
+        .option-card:hover { border-color: var(--accent); transform: translateY(-3px); box-shadow: var(--shadow-sm); filter: var(--glow-effect); }
+        .option-card:hover i, .option-card:hover span { color: var(--accent); }
+        
+        /* Card Form */
+        .card-preview { background: linear-gradient(135deg, #0f172a, #334155); border-radius: 16px; padding: 1.5rem; color: white; margin-bottom: 2rem; position: relative; overflow: hidden; box-shadow: 0 10px 20px rgba(15,23,42,0.2); }
+        .card-preview::before { content: ''; position: absolute; top: -50px; right: -50px; width: 150px; height: 150px; border-radius: 50%; border: 20px solid rgba(255,255,255,0.05); }
+        .card-number-disp { font-family: monospace; font-size: 1.4rem; letter-spacing: 2px; margin: 1.5rem 0 1rem 0; opacity: 0.9; }
+        .card-meta { display: flex; justify-content: space-between; font-size: 0.85rem; opacity: 0.8; text-transform: uppercase; }
+
+        /* QR Code Container */
+        .qr-container { text-align: center; border: 2px dashed #cbd5e1; border-radius: 20px; padding: 2rem; margin-top: 1rem; background: #f8fafc; }
+        .qr-container img { max-width: 200px; border-radius: 12px; box-shadow: 0 10px 20px rgba(0,0,0,0.1); margin-bottom: 1.5rem; }
+        .upi-id-box { background: #e0f2fe; padding: 1rem; border-radius: 12px; color: #0284c7; font-family: monospace; font-size: 1.1rem; font-weight: 600; letter-spacing: 1px; display: inline-block; }
+
+        /* Processing Loader Overlay */
+        .loader-overlay { position: fixed; inset: 0; background: var(--bg-surface); backdrop-filter: var(--glass-filter); -webkit-backdrop-filter: var(--glass-filter); z-index: 2000; display: none; justify-content: center; align-items: center; flex-direction: column; opacity:0; transition: opacity 0.3s; }
+        .spinner { width: 70px; height: 70px; border: 4px solid var(--border-color); border-top-color: var(--accent); border-radius: 50%; animation: spin 1s cubic-bezier(0.68, -0.55, 0.265, 1.55) infinite; margin-bottom: 2rem; }
+        .loader-text { font-family: 'Outfit', sans-serif; font-size: 1.6rem; font-weight: 700; color: var(--text-main); }
+        .loader-subtext { color: var(--text-muted); margin-top: 0.5rem; font-size: 1.1rem; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        
+        .success-icon { width: 80px; height: 80px; background: #10b981; border-radius: 50%; color: white; display: none; align-items: center; justify-content: center; font-size: 2.5rem; margin-bottom: 1.5rem; animation: popIn 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275); box-shadow: 0 10px 25px rgba(16, 185, 129, 0.4); }
+        @keyframes popIn { 0% { transform: scale(0); } 80% { transform: scale(1.1); } 100% { transform: scale(1); } }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="logo" onclick="window.location.href='home.html'"><i class="fa-solid fa-notes-medical gradient-text-universal"></i> <span class="gradient-text-universal">HealthSymphony</span></div>
+        <div style="display: flex; gap: 1.5rem; align-items: center;">
+            <a href="profile.html" style="color: var(--text-muted); text-decoration: none; font-weight: 500;"><i class="fa-solid fa-user"></i> Dashboard</a>
+            <a href="chat.html" style="color: var(--text-muted); text-decoration: none; font-weight: 500;"><i class="fa-solid fa-stethoscope"></i> AI Consult</a>
+            <a href="appointments.html" style="color: var(--text-muted); text-decoration: none; font-weight: 500;"><i class="fa-solid fa-calendar-check"></i> Appointments</a>
+        </div>
+    </nav>
+
+    <div class="pricing-orbs">
+        <div class="orb orb-1"></div>
+        <div class="orb orb-2"></div>
+    </div>
+
+    <div class="container" style="position: relative; z-index: 5;">
+        <div class="header">
+            <h1>Choose Your <span class="gradient-text-universal">Premium</span> Plan</h1>
+            <p>Unlock the full potential of HealthSymphony's intelligent diagnosis engine. Get comprehensive insights and priority response perfectly tailored to your visual aesthetic.</p>
+        </div>
+
+        <div class="billing-toggle-wrapper" id="billing-wrap">
+            <span class="billing-label active" id="label-monthly" onclick="toggleBilling(false)">Monthly</span>
+            <div class="toggle-switch" onclick="toggleBilling('auto')"></div>
+            <span class="billing-label" id="label-yearly" style="position:relative;" onclick="toggleBilling(true)">
+                Annually
+                <div class="save-badge">Save 20%</div>
+            </span>
+        </div>
+
+        <div class="plans-grid">
+            <div class="plan-card">
+                <h2 class="plan-title">Basic</h2>
+                <p class="plan-desc">Perfect for quick, occasional health inquiries.</p>
+                <div class="plan-price-wrap">
+                    <div class="plan-price">Free</div>
+                    <div class="plan-duration">/forever</div>
+                </div>
+                <ul class="plan-features">
+                    <li><i class="fa-solid fa-check"></i> <div>Limited daily consultations</div></li>
+                    <li><i class="fa-solid fa-check"></i> <div>Basic symptom analysis</div></li>
+                    <li style="opacity:0.5;"><i class="fa-solid fa-xmark"></i> <div style="text-decoration: line-through;">Structured medical PDFs</div></li>
+                    <li style="opacity:0.5;"><i class="fa-solid fa-xmark"></i> <div style="text-decoration: line-through;">Priority specialist routing</div></li>
+                </ul>
+                <button class="btn btn-outline" onclick="window.location.href='chat.html'">Current Plan</button>
+            </div>
+
+            <div class="plan-card plan-recommended">
+                <div class="recommended-badge">Most Popular</div>
+                <h2 class="plan-title">Pro</h2>
+                <p class="plan-desc">Ideal for comprehensive tracking and detailed medical insights.</p>
+                <div class="plan-price-wrap">
+                    <div class="plan-price doc-price" data-monthly="₹499" data-yearly="₹399">₹499</div>
+                    <div class="plan-duration">/month</div>
+                </div>
+                <ul class="plan-features">
+                    <li><i class="fa-solid fa-check" style="color:var(--accent);"></i> <div>Unlimited accurate consultations</div></li>
+                    <li><i class="fa-solid fa-check" style="color:var(--accent);"></i> <div>Deep-dive diagnostic AI logic</div></li>
+                    <li><i class="fa-solid fa-check" style="color:var(--accent);"></i> <div>Save & export structured medical summaries</div></li>
+                    <li style="opacity:0.5;"><i class="fa-solid fa-xmark"></i> <div style="text-decoration: line-through;">Family profile sharing</div></li>
+                </ul>
+                <button class="btn btn-primary u-btn" onclick="initCheckout('Pro Plan')">Upgrade to Pro</button>
+            </div>
+
+            <div class="plan-card">
+                <h2 class="plan-title">Elite</h2>
+                <p class="plan-desc">The absolute ultimate tier for families and robust health monitoring.</p>
+                <div class="plan-price-wrap">
+                    <div class="plan-price doc-price" data-monthly="₹1,299" data-yearly="₹999">₹1,299</div>
+                    <div class="plan-duration">/month</div>
+                </div>
+                <ul class="plan-features">
+                    <li><i class="fa-solid fa-star"></i> <div>Everything exclusively in Pro</div></li>
+                    <li><i class="fa-solid fa-users"></i> <div>Multi-profile tracked family monitoring</div></li>
+                    <li><i class="fa-solid fa-bolt"></i> <div>Priority email support & routing</div></li>
+                    <li><i class="fa-solid fa-microchip"></i> <div>Early access to Beta AI logic</div></li>
+                </ul>
+                <button class="btn btn-primary u-btn" style="background: transparent; border: 2px solid var(--text-main); color: var(--text-main);" onclick="initCheckout('Elite Plan')">Upgrade to Elite</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Advanced Dynamic Checkout Modal -->
+    <div class="checkout-overlay" id="checkout-modal">
+        <div class="checkout-modal">
+            <div class="modal-header">
+                <i class="fa-solid fa-xmark close-modal" onclick="closeCheckout()"></i>
+                <div class="modal-title">
+                    <i class="fa-solid fa-arrow-left back-step" id="back-btn" onclick="goBackStep()"></i>
+                    <span id="modal-heading">User Details</span>
+                </div>
+            </div>
+            
+            <div class="modal-body">
+                <!-- Fixed Summary Header across steps -->
+                <div class="summary-card">
+                    <div class="summary-detail">
+                        <p>Selected Subscription</p>
+                        <h4 id="disp-plan-name">Pro Plan</h4>
+                    </div>
+                    <div class="summary-price" id="disp-plan-price">₹499</div>
+                </div>
+
+                <!-- STEP 1: User Info -->
+                <div id="step-1" class="step-container active">
+                    <form id="user-info-form" onsubmit="goToStep2(event)">
+                        <div class="form-grid">
+                            <div class="form-group full">
+                                <label>Full Name *</label>
+                                <input type="text" id="user-name" class="form-input" placeholder="e.g. Rahul Sharma" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Email Address *</label>
+                                <input type="email" id="user-email" class="form-input" placeholder="mail@example.com" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Phone Number *</label>
+                                <input type="tel" id="user-phone" class="form-input" pattern="[0-9]{10}" placeholder="10-digit mobile" required>
+                                <div class="error-msg" id="err-phone">Must be exactly 10 digits and numeric.</div>
+                                <div class="error-msg" id="err-phone-match" style="display:none; color: #ef4444; margin-top: 0.5rem;">Error: Please enter the correct phone number associated with your account.</div>
+                            </div>
+                            <div class="form-group full">
+                                <label>Location (Optional)</label>
+                                <input type="text" id="user-loc" class="form-input" placeholder="e.g. Mumbai, India">
+                            </div>
+                        </div>
+                        <button type="submit" id="continue-btn" class="btn btn-primary" style="margin-top: 1rem;">
+                            Continue to Payment <i class="fa-solid fa-arrow-right" style="margin-left: 0.5rem;"></i>
+                        </button>
+                    </form>
+                </div>
+
+                <!-- STEP 2: Main Payment Methods -->
+                <div id="step-2" class="step-container">
+                    <p style="margin-bottom: 1.5rem; color: #475569; font-weight: 500;">Select your preferred payment method:</p>
+                    <div class="option-grid">
+                        <div class="option-card" onclick="showSubMethod('upi')">
+                            <i class="fa-solid fa-qrcode"></i>
+                            <span>UPI App</span>
+                        </div>
+                        <div class="option-card" onclick="showSubMethod('cards')">
+                            <i class="fa-solid fa-credit-card"></i>
+                            <span>Credit / Debit Card</span>
+                        </div>
+                        <div class="option-card" onclick="showSubMethod('netbanking')">
+                            <i class="fa-solid fa-building-columns"></i>
+                            <span>Net Banking</span>
+                        </div>
+                        <div class="option-card" onclick="showSubMethod('wallets')">
+                            <i class="fa-solid fa-wallet"></i>
+                            <span>Wallets</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- STEP 3A: UPI Selection -->
+                <div id="step-3-upi" class="step-container">
+                    <p style="margin-bottom: 1.5rem; color: #475569; font-weight: 500;">Select your UPI App:</p>
+                    <div class="option-grid">
+                        <div class="option-card" onclick="showUPIDetails('GPay')">
+                            <i class="fa-brands fa-google" style="color: #ea4335;"></i>
+                            <span>Google Pay</span>
+                        </div>
+                        <div class="option-card" onclick="showUPIDetails('PhonePe')">
+                            <i class="fa-brands fa-paypal" style="color: #5b21b6;"></i>
+                            <span>PhonePe</span>
+                        </div>
+                        <div class="option-card" onclick="showUPIDetails('Paytm')">
+                            <i class="fa-solid fa-mobile-screen" style="color: #0ea5e9;"></i>
+                            <span>Paytm</span>
+                        </div>
+                        <div class="option-card" onclick="showUPIDetails('PayU')">
+                            <i class="fa-solid fa-p" style="color: #10b981;"></i>
+                            <span>PayU</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- STEP 3B: Cards -->
+                <div id="step-3-cards" class="step-container">
+                    <p style="margin-bottom: 1.5rem; color: #475569; font-weight: 500;">Select Card Type:</p>
+                    <div class="option-grid">
+                        <div class="option-card" onclick="showCardDetails('Credit')">
+                            <i class="fa-regular fa-credit-card"></i>
+                            <span>Credit Card</span>
+                        </div>
+                        <div class="option-card" onclick="showCardDetails('Debit')">
+                            <i class="fa-solid fa-credit-card"></i>
+                            <span>Debit Card</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- STEP 4A: UPI Processing Logic -->
+                <div id="step-4-upi" class="step-container">
+                    <div style="background: #f8fafc; padding: 1.5rem; border-radius: 16px; border: 1px solid #e2e8f0; margin-bottom: 2rem; text-align: center;">
+                        <h4 style="margin-bottom: 1rem; color: #0f172a;">Option 1: Scan to Pay</h4>
+                        
+                        <div class="qr-container" style="background: #fff; padding: 1rem; display: inline-block; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border: 1px solid #e2e8f0; margin-bottom: 1rem;">
+                            <img id="dynamic-qr" src="" alt="UPI QR Code" style="box-shadow: none; margin-bottom: 0.5rem;">
+                        </div>
+                        
+                        <div style="font-size: 1.2rem; font-weight: 800; color: #0284c7; margin-bottom: 0.5rem;" id="qr-amount-disp">₹999</div>
+                        <div style="font-family: monospace; color: #475569; font-size: 0.95rem; background: #f1f5f9; padding: 0.5rem 1rem; border-radius: 8px; display: inline-block;">UPI ID: 6383649156@ptyes</div>
+                    </div>
+                    <div style="text-align: center; margin-bottom: 2rem; color: #94a3b8; font-weight: 600;">OR</div>
+                    <form onsubmit="processUPIPayment(event)">
+                        <div class="form-group">
+                            <label>Option 2: Enter UPI ID</label>
+                            <input type="text" id="upi-input" class="form-input" placeholder="e.g. user@okhdfcbank" required>
+                            <div class="error-msg" id="err-upi" style="color:red; font-size:0.85rem; display:none;">Invalid UPI ID format. Should be like name@bank</div>
+                        </div>
+                        <button type="submit" id="upi-submit-btn" class="btn btn-primary" style="margin-top: 1rem; display:flex; justify-content:center; align-items:center; gap:0.5rem;">
+                            <i class="fa-solid fa-lock"></i> Pay Securely via UPI
+                        </button>
+                    </form>
+                </div>
+
+                <!-- STEP 4B: Card Form Logic -->
+                <div id="step-4-card" class="step-container">
+                    <div class="card-preview">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <i class="fa-brands fa-cc-visa" style="font-size: 2rem;"></i>
+                            <i class="fa-solid fa-wifi" style="transform: rotate(90deg);"></i>
+                        </div>
+                        <div class="card-number-disp" id="card-disp">•••• •••• •••• ••••</div>
+                        <div class="card-meta">
+                            <div id="name-disp" style="text-overflow: ellipsis; overflow: hidden; white-space: nowrap; max-width: 70%;">CARD HOLDER</div>
+                            <div id="exp-disp">MM/YY</div>
+                        </div>
+                    </div>
+                    <form onsubmit="processFinalPayment(event, 'Card')">
+                        <div class="form-group">
+                            <label>Card Number</label>
+                            <input type="text" class="form-input" id="card-num" maxlength="19" placeholder="0000 0000 0000 0000" oninput="updateCardUI()" required>
+                        </div>
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label>Expiry Date</label>
+                                <input type="text" class="form-input" id="card-exp" maxlength="5" placeholder="MM/YY" oninput="updateCardUI()" required>
+                            </div>
+                            <div class="form-group">
+                                <label>CVV</label>
+                                <input type="password" class="form-input" maxlength="4" placeholder="123" required>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Card Holder Name</label>
+                            <input type="text" class="form-input" id="card-name" placeholder="Full Name on Card" oninput="updateCardUI()" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary" style="margin-top: 1rem; display:flex; justify-content:center; align-items:center; gap:0.5rem;">
+                            <i class="fa-solid fa-lock"></i> Pay Securely via Card
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Generic Fallback for Wallets/NetBanking -->
+                <div id="step-4-generic" class="step-container">
+                    <div style="text-align:center; padding: 3rem 1rem;">
+                        <i class="fa-solid fa-building-columns" style="font-size: 3rem; color: #94a3b8; margin-bottom: 1rem;"></i>
+                        <h3 style="font-family: 'Outfit', sans-serif; margin-bottom: 1rem;">Secure Gateway Redirection</h3>
+                        <p style="color: #64748b; margin-bottom: 2rem;">You will be redirected to your bank's secure authorization portal to approve the transaction.</p>
+                        <button class="btn btn-primary" onclick="processFinalPayment(new Event('submit'), 'Bank/Wallet')">
+                            Proceed to Secure Portal <i class="fa-solid fa-arrow-right-to-bracket" style="margin-left: 0.5rem;"></i>
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- Processing Loader Overlay -->
+    <div class="loader-overlay" id="loader">
+        <div class="success-icon" id="success-icon"><i class="fa-solid fa-check"></i></div>
+        <div class="success-icon" id="fail-icon" style="background:#ef4444;"><i class="fa-solid fa-xmark"></i></div>
+        <div class="spinner" id="spinner"></div>
+        <div class="loader-text" id="loader-title">Authenticating...</div>
+        <div class="loader-subtext" id="loader-desc">Please do not refresh or close this window.</div>
+        <button id="retry-btn" class="btn btn-outline" style="margin-top: 2rem; width: auto; padding: 0.8rem 2rem; display: none;" onclick="closeLoader()">Retry Payment</button>
+    </div>
+
+    <!-- FIREBASE COMPAT SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
+
+    <script>
+        const firebaseConfig = {
+          apiKey: "AIzaSyAgJ01RHrpzywI_EG2whluBDyj7kGvlQLw",
+          authDomain: "healthcare-chatbot-8b131.firebaseapp.com",
+          databaseURL: "https://healthcare-chatbot-8b131-default-rtdb.asia-southeast1.firebasedatabase.app/",
+          projectId: "healthcare-chatbot-8b131",
+          storageBucket: "healthcare-chatbot-8b131.firebasestorage.app",
+          messagingSenderId: "414500073416",
+          appId: "1:414500073416:web:a22115813f5e96922edafd",
+          measurementId: "G-B7KM52WJP0"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
+        let currentPlan = '';
+        let currentPrice = 0;
+        let currentStep = 1;
+        let paymentMethodStr = '';
+        
+        const user = JSON.parse(localStorage.getItem('hs_currentUser'));
+        if (user) {
+            if (user.name) document.getElementById('user-name').value = user.name;
+            if (user.email) document.getElementById('user-email').value = user.email;
+        }
+
+        // Modal Controls
+        let isYearly = false;
+
+        function toggleBilling(forceYearly) {
+            const wrap = document.getElementById('billing-wrap');
+            const lMonth = document.getElementById('label-monthly');
+            const lYear = document.getElementById('label-yearly');
+            
+            if(forceYearly === 'auto') {
+                isYearly = !isYearly;
+            } else {
+                isYearly = forceYearly;
+            }
+            
+            if(isYearly) {
+                wrap.classList.add('yearly');
+                lYear.classList.add('active');
+                lMonth.classList.remove('active');
+            } else {
+                wrap.classList.remove('yearly');
+                lMonth.classList.add('active');
+                lYear.classList.remove('active');
+            }
+            
+            // Animate Price Changes seamlessly
+            const priceNodes = document.querySelectorAll('.doc-price');
+            priceNodes.forEach(node => {
+                node.style.opacity = '0';
+                node.style.transform = 'translateY(10px)';
+                setTimeout(() => {
+                    node.innerText = isYearly ? node.getAttribute('data-yearly') : node.getAttribute('data-monthly');
+                    node.style.opacity = '1';
+                    node.style.transform = 'translateY(0)';
+                }, 200);
+            });
+        }
+
+        function initCheckout(planName) {
+            // calculate cost on fly
+            let intCost = 0;
+            if(planName === 'Pro Plan') intCost = isYearly ? 399*12 : 499;
+            if(planName === 'Elite Plan') intCost = isYearly ? 999*12 : 1299;
+            
+            currentPlan = planName;
+            currentPrice = intCost;
+            document.getElementById('disp-plan-name').innerText = planName;
+            document.getElementById('disp-plan-price').innerText = '₹' + intCost;
+            
+            navToStep(1, "User Details");
+            
+            const modal = document.getElementById('checkout-modal');
+            modal.style.display = 'flex';
+            setTimeout(() => modal.style.opacity = '1', 10);
+        }
+
+        function closeCheckout() {
+            const modal = document.getElementById('checkout-modal');
+            modal.style.opacity = '0';
+            setTimeout(() => modal.style.display = 'none', 400);
+        }
+
+        // Navigation Logic
+        function navToStep(stepNum, titleText) {
+            currentStep = stepNum;
+            document.querySelectorAll('.step-container').forEach(el => el.classList.remove('active'));
+            
+            if (stepNum === 1) {
+                document.getElementById('step-1').classList.add('active');
+                document.getElementById('back-btn').style.display = 'none';
+            } else if (stepNum === 2) {
+                document.getElementById('step-2').classList.add('active');
+                document.getElementById('back-btn').style.display = 'block';
+            } else if (stepNum === 3 && paymentMethodStr === 'UPI') {
+                document.getElementById('step-3-upi').classList.add('active');
+                document.getElementById('back-btn').style.display = 'block';
+            } else if (stepNum === 3 && paymentMethodStr === 'Cards') {
+                document.getElementById('step-3-cards').classList.add('active');
+                document.getElementById('back-btn').style.display = 'block';
+            } else if (stepNum === 4 && paymentMethodStr === 'UPI') {
+                document.getElementById('step-4-upi').classList.add('active');
+                document.getElementById('back-btn').style.display = 'block';
+            } else if (stepNum === 4 && paymentMethodStr === 'Cards') {
+                document.getElementById('step-4-card').classList.add('active');
+                document.getElementById('back-btn').style.display = 'block';
+            } else if (stepNum === 4 && (paymentMethodStr === 'NetBanking' || paymentMethodStr === 'Wallets')) {
+                document.getElementById('step-4-generic').classList.add('active');
+                document.getElementById('back-btn').style.display = 'block';
+            }
+
+            document.getElementById('modal-heading').innerText = titleText;
+        }
+
+        function goBackStep() {
+            if (currentStep === 4) navToStep(3, "Select Provider");
+            else if (currentStep === 3) navToStep(2, "Select Payment Method");
+            else if (currentStep === 2) navToStep(1, "User Details");
+        }
+
+        // Step 1 Submit
+        async function goToStep2(e) {
+            e.preventDefault();
+            const phoneInput = document.getElementById('user-phone').value;
+            const btn = document.getElementById('continue-btn');
+            
+            // Validate formatting
+            const phoneRegex = /^[0-9]{10}$/;
+            if (!phoneRegex.test(phoneInput)) { 
+                document.getElementById('err-phone').style.display = 'block'; 
+                document.getElementById('err-phone-match').style.display = 'none';
+                return; 
+            }
+            document.getElementById('err-phone').style.display = 'none';
+            
+            if (!user || !user.email) {
+                alert("Please login again. Session expired or missing email.");
+                window.location.href = "login.html";
+                return;
+            }
+
+            btn.innerHTML = 'Verifying... <i class="fa-solid fa-spinner fa-spin"></i>';
+            btn.disabled = true;
+
+            // Check Firebase instead of old local storage
+            try {
+                const snapshot = await db.ref('users').orderByChild('email').equalTo(user.email).once('value');
+                if (!snapshot.exists()) {
+                    alert("Please login again. User not found in system database.");
+                    window.location.href = "login.html";
+                    return;
+                }
+                
+                let dbUser = null;
+                snapshot.forEach(child => { dbUser = child.val(); });
+                
+                if (dbUser.phone && dbUser.phone !== phoneInput) {
+                    document.getElementById('err-phone-match').innerText = "Enter your registered phone number.";
+                    document.getElementById('err-phone-match').style.display = 'block';
+                    btn.innerHTML = 'Continue to Payment <i class="fa-solid fa-arrow-right" style="margin-left: 0.5rem;"></i>';
+                    btn.disabled = false;
+                    btn.style.opacity = '1';
+                    
+                    document.getElementById('user-phone').addEventListener('input', function() {
+                        document.getElementById('err-phone-match').style.display = 'none';
+                    }, { once: true });
+                    return;
+                }
+            } catch(e) {
+                console.warn("Could not verify against Firebase due to connection issue. Proceeding safely.");
+            }
+
+            btn.innerHTML = 'Continue to Payment <i class="fa-solid fa-arrow-right" style="margin-left: 0.5rem;"></i>';
+            btn.disabled = false;
+
+            // Save phone to profile if it exists
+            if (user) {
+                let savedProfile = JSON.parse(localStorage.getItem('hs_profile_' + user.id) || '{}');
+                savedProfile.phone = phoneInput;
+                localStorage.setItem('hs_profile_' + user.id, JSON.stringify(savedProfile));
+            }
+            navToStep(2, "Select Payment Method");
+        }
+
+        // Step 2 Routing
+        function showSubMethod(method) {
+            if (method === 'upi') { paymentMethodStr = 'UPI'; navToStep(3, "Select UPI App"); }
+            else if (method === 'cards') { paymentMethodStr = 'Cards'; navToStep(3, "Select Card Type"); }
+            else if (method === 'netbanking') { paymentMethodStr = 'NetBanking'; navToStep(4, "Secure Redirection"); }
+            else if (method === 'wallets') { paymentMethodStr = 'Wallets'; navToStep(4, "Secure Redirection"); }
+        }
+
+        // Step 3 Routing
+        function showUPIDetails(appName) {
+            document.getElementById('qr-amount-disp').innerText = '₹' + currentPrice;
+            const upiString = `upi://pay?pa=6383649156@ptyes&pn=HealthSymphony&am=${currentPrice}&cu=INR`;
+            document.getElementById('dynamic-qr').src = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(upiString)}`;
+            navToStep(4, "Complete Payment");
+        }
+        
+        function showCardDetails(cardType) {
+            document.getElementById('card-num').value = '';
+            document.getElementById('card-exp').value = '';
+            document.getElementById('card-name').value = '';
+            updateCardUI();
+            navToStep(4, "Secure Card Payment");
+        }
+
+        // UI Helpers
+        function updateCardUI() {
+            let num = document.getElementById('card-num').value || '•••• •••• •••• ••••';
+            if (num !== '•••• •••• •••• ••••') num = num.replace(/\s/g, '').replace(/(.{4})/g, '$1 ').trim();
+            document.getElementById('card-num').value = num;
+            
+            document.getElementById('card-disp').innerText = num;
+            document.getElementById('exp-disp').innerText = document.getElementById('card-exp').value || 'MM/YY';
+            document.getElementById('name-disp').innerText = document.getElementById('card-name').value.toUpperCase() || 'CARD HOLDER';
+        }
+
+        // Manual UPI processing
+        function processUPIPayment(e) {
+            e.preventDefault();
+            const upiId = document.getElementById('upi-input').value.trim();
+            const regex = /^[a-zA-Z0-9.\-_]{2,256}@[a-zA-Z]{2,64}$/;
+            
+            if (!regex.test(upiId)) {
+                document.getElementById('err-upi').style.display = 'block';
+                return;
+            }
+            
+            document.getElementById('err-upi').style.display = 'none';
+            const btn = document.getElementById('upi-submit-btn');
+            btn.disabled = true;
+            btn.innerHTML = 'Processing... <i class="fa-solid fa-spinner fa-spin"></i>';
+
+            const upiString = `upi://pay?pa=6383649156@ptyes&pn=Premium&am=${currentPrice}&cu=INR`;
+            window.location.href = upiString;
+
+            setTimeout(() => {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fa-solid fa-lock"></i> Pay Securely via UPI';
+                
+                closeCheckout();
+                const loader = document.getElementById('loader');
+                document.getElementById('spinner').style.display = 'block';
+                document.getElementById('success-icon').style.display = 'none';
+                document.getElementById('fail-icon').style.display = 'none';
+                document.getElementById('retry-btn').style.display = 'none';
+                document.getElementById('loader-title').style.color = '#0f172a';
+                
+                loader.style.display = 'flex';
+                setTimeout(() => loader.style.opacity = '1', 10);
+
+                setTimeout(() => {
+                    document.getElementById('loader-title').innerText = 'Awaiting User Approval...';
+                    document.getElementById('loader-desc').innerText = `Please open your UPI app to approve the ₹${currentPrice} request.`;
+                    
+                    setTimeout(() => finalizeSimulatedPayment('UPI'), 4000); // 4 seconds of fake waiting
+                }, 1000);
+            }, 800);
+        }
+
+        // Final Payment processing for generic types
+        function processFinalPayment(e, type) {
+            if(e && e.preventDefault) e.preventDefault();
+            
+            closeCheckout();
+            const loader = document.getElementById('loader');
+            document.getElementById('spinner').style.display = 'block';
+            document.getElementById('success-icon').style.display = 'none';
+            document.getElementById('fail-icon').style.display = 'none';
+            document.getElementById('retry-btn').style.display = 'none';
+            document.getElementById('loader-title').style.color = '#0f172a';
+            
+            loader.style.display = 'flex';
+            setTimeout(() => loader.style.opacity = '1', 10);
+
+            setTimeout(() => {
+                document.getElementById('loader-title').innerText = 'Processing Transaction...';
+                document.getElementById('loader-desc').innerText = `Connecting to banking institution securely.`;
+                
+                setTimeout(() => finalizeSimulatedPayment(type), 2000);
+            }, 1000);
+        }
+
+        async function finalizeSimulatedPayment(type) {
+             // 10% Chance to simulate failure for realism automatically
+             if (Math.random() < 0.1) {
+                 document.getElementById('spinner').style.display = 'none';
+                 document.getElementById('fail-icon').style.display = 'flex';
+                 document.getElementById('loader-title').innerText = 'Payment Failed';
+                 document.getElementById('loader-desc').innerText = `Your bank declined or timed out the request.`;
+                 document.getElementById('loader-title').style.color = '#ef4444';
+                 document.getElementById('retry-btn').style.display = 'block';
+                 return;
+             }
+
+             if (user) {
+                 const newTxn = {
+                     paymentId: 'TXN_' + Math.random().toString(36).substr(2, 9).toUpperCase(),
+                     userId: user.id || 'local',
+                     email: user.email,
+                     amount: currentPrice,
+                     plan: currentPlan,
+                     method: paymentMethodStr,
+                     status: 'SUCCESS',
+                     timestamp: Date.now()
+                 };
+
+                 try {
+                     await db.ref('payments').push().set(newTxn);
+                     
+                     // Locate user node and update premium status in Firebase
+                     const userSnap = await db.ref('users').orderByChild('email').equalTo(user.email).once('value');
+                     if(userSnap.exists()) {
+                         userSnap.forEach(child => {
+                             child.ref.update({
+                                 isPremium: true,
+                                 plan: currentPlan
+                             });
+                         });
+                     }
+                 } catch (e) {
+                     console.warn("Firebase failed, proceeding offline.", e);
+                 }
+
+                 // Update Local Storage
+                 user.isPremium = true;
+                 user.plan = currentPlan;
+                 localStorage.setItem('hs_currentUser', JSON.stringify(user));
+
+                 document.getElementById('spinner').style.display = 'none';
+                 document.getElementById('success-icon').style.display = 'flex';
+                 document.getElementById('loader-title').innerText = 'Payment Successful!';
+                 document.getElementById('loader-desc').innerText = `Your HealthSymphony account is now ${currentPlan}. Redirecting...`;
+                 document.getElementById('loader-title').style.color = '#10b981';
+                 
+                 setTimeout(() => window.location.href = 'chat.html', 3000);
+             } else {
+                 alert("User not logged in!");
+                 window.location.href = 'login.html';
+             }
+        }
+        
+        function closeLoader() {
+            const loader = document.getElementById('loader');
+            loader.style.opacity = '0';
+            setTimeout(() => loader.style.display = 'none', 300);
+            const modal = document.getElementById('checkout-modal');
+            modal.style.display = 'flex';
+            setTimeout(() => modal.style.opacity = '1', 10);
+        }
+    </script>
+</body>
+</html>

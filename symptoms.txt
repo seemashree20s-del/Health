@@ -1,0 +1,516 @@
+Fever
+High fever
+Low fever
+Chills
+Night sweats
+Excessive sweating
+Fatigue
+Weakness
+Malaise
+Body aches
+Sudden tiredness
+Energy loss
+Weight loss
+Weight gain
+Loss of appetite
+Increased appetite
+Dehydration
+Fainting
+Feeling faint
+General discomfort
+Headache
+Migraine
+Dizziness
+Lightheadedness
+Brain fog
+Memory loss
+Difficulty concentrating
+Confusion
+Loss of consciousness
+Seizures
+Tremors
+Facial numbness
+Facial weakness
+Difficulty speaking
+Balance problems
+Slurred speech
+Loss of coordination
+Sensitivity to light
+Sensitivity to noise
+Sudden confusion
+Blurred vision
+Double vision
+Vision loss
+Eye redness
+Eye pain
+Eye itching
+Watery eyes
+Dry eyes
+Eye discharge
+Eye strain
+Burning eyes
+Eyelid swelling
+Eyelid twitching
+Drooping eyelid
+Seeing flashes
+Seeing spots
+Tunnel vision
+Eye irritation
+Eye pressure
+Difficulty focusing
+Ear pain
+Ringing in ears
+Hearing loss
+Ear fullness
+Ear pressure
+Ear itching
+Ear discharge
+Ear blockage
+Sensitivity to sound
+Crackling sound in ear
+Runny nose
+Stuffy nose
+Sneezing
+Nose bleeding
+Nasal dryness
+Nasal burning
+Nasal congestion
+Thick nasal mucus
+Sinus pressure
+Sinus pain
+Sore throat
+Hoarseness
+Difficulty swallowing
+Pain while swallowing
+Lump in throat
+Dry throat
+Throat irritation
+Voice loss
+Throat swelling
+Throat tightness
+Cough
+Dry cough
+Wet cough
+Chronic cough
+Shortness of breath
+Wheezing
+Chest tightness
+Rapid breathing
+Chest pain while breathing
+Coughing blood
+Chest pain
+Chest pressure
+Heart palpitations
+Rapid heartbeat
+Slow heartbeat
+Irregular heartbeat
+Cold sweat
+Pale skin
+Swollen legs
+Leg cramps
+Nausea
+Vomiting
+Vomiting blood
+Diarrhea
+Constipation
+Abdominal pain
+Bloating
+Gas
+Heartburn
+Acid reflux
+Indigestion
+Stomach cramps
+Stomach burning
+Loss of taste
+Bitter taste in mouth
+Food intolerance
+Excessive hunger
+Difficulty digesting food
+Black stools
+Greasy stools
+Rash
+Itching
+Redness
+Swelling
+Dry skin
+Blisters
+Bruising
+Skin peeling
+Skin discoloration
+Acne
+Skin burning
+Skin irritation
+Skin bumps
+Scaly skin
+Thickened skin
+Skin sensitivity
+Pus pimples
+Skin cracking
+Skin darkening
+Skin lightening
+Hair loss
+Hair thinning
+Hair breakage
+Dandruff
+Scalp itching
+Scalp pain
+Brittle nails
+Nail discoloration
+Nail thickening
+Nail splitting
+Joint pain
+Joint stiffness
+Muscle pain
+Muscle cramps
+Back pain
+Neck pain
+Limited movement
+Swollen joints
+Muscle weakness
+Tremors
+Bone pain
+Joint popping
+Joint locking
+Muscle stiffness
+Muscle twitching
+Muscle swelling
+Difficulty walking
+Difficulty standing
+Knee swelling
+Shoulder pain
+Numbness
+Tingling sensation
+Burning sensation in limbs
+Loss of balance
+Sudden confusion
+Loss of coordination
+Hand tremors
+Facial numbness
+Electric shock sensation
+Pins and needles
+Frequent urination
+Painful urination
+Blood in urine
+Dark urine
+Urine leakage
+Difficulty urinating
+Strong urine smell
+Burning urination
+Night urination
+Reduced urine output
+Pelvic pain
+Genital itching
+Genital swelling
+Unusual discharge
+Missed periods
+Painful periods
+Breast tenderness
+Breast swelling
+Breast lumps
+Nipple discharge
+Anxiety
+Depression
+Mood swings
+Irritability
+Stress
+Panic attacks
+Insomnia
+Excessive sleepiness
+Lack of motivation
+Feeling hopeless
+Difficulty falling asleep
+Frequent waking
+Early waking
+Restless sleep
+Nightmares
+Sleep talking
+Sleepwalking
+Teeth grinding
+Unrefreshing sleep
+Sudden sleep attacks
+Swollen lymph nodes
+Persistent thirst
+Cold hands and feet
+Hot flashes
+Slow wound healing
+Frequent infections
+Face puffiness
+Body heaviness   
+Difficulty moving
+General discomfort
+Cold sensitivity
+Heat intolerance
+Shivering
+Muscle tightness
+Hand stiffness
+Finger swelling
+Ankle pain
+Ankle swelling
+Hip pain
+Shoulder stiffness
+Loss of smell
+Loss of taste
+Altered taste
+Burning tongue
+Tongue swelling
+Mouth ulcers
+Dry mouth
+Bleeding gums
+Toothache
+Jaw pain
+Stomach heaviness
+Feeling full quickly
+Burping frequently
+Food regurgitation
+Rectal bleeding
+Rectal pain
+Anal itching
+Pain before bowel movement
+Pain after bowel movement
+Abdominal swelling
+Cold feet
+Cold hands
+Swollen feet
+Swollen hands
+Swollen face
+Leg numbness
+Leg weakness
+Leg heaviness
+Foot burning
+Foot numbness
+Sudden body jerks
+Muscle vibration feeling
+Internal shaking
+Slow reaction time
+Reduced sensation
+Difficulty writing
+Difficulty gripping
+Trouble walking straight
+Sudden muscle weakness
+Limb stiffness
+Sudden sweating
+Sudden chills
+Unexplained weight change
+Increased thirst
+Increased urination
+Breast pain
+Hormonal mood swings
+Irregular periods
+Delayed periods
+Heavy periods
+Light sensitivity
+Sound sensitivity
+Skin warmth
+Skin tenderness
+Skin bumps on arms
+Small red skin spots
+Skin itch at night
+Skin rash on face
+Skin rash on legs
+Skin rash on hands
+Difficulty bending
+Difficulty lifting arms
+Trouble climbing stairs
+Weak grip
+Arm weakness
+Leg shaking
+Stiff knees
+Shoulder weakness
+Hip stiffness
+Hand shaking
+Excess saliva
+Dry lips
+Cracked lips
+Bad breath
+Bitter mouth taste
+Mouth swelling
+Tongue numbness
+Jaw stiffness
+Teeth sensitivity
+Gum swelling
+Sudden fatigue
+Sudden dizziness
+Sudden sweating
+Body tremors
+Facial redness
+Facial swelling
+Neck stiffness
+Neck swelling
+Neck pain
+Neck tenderness
+Shoulder swelling
+Shoulder stiffness
+Wrist pain
+Wrist swelling
+Finger stiffness
+Finger pain
+Knee pain
+Knee stiffness
+Knee locking
+Knee instability
+Foot swelling
+Foot pain
+Toe pain
+Toe swelling
+Heel pain
+Leg cramps at night
+Leg swelling
+Leg redness
+Leg warmth
+Leg tenderness
+Chest heaviness
+Chest burning
+Chest discomfort
+Pain when breathing deeply
+Breathlessness during activity
+Breathlessness at rest
+Loud breathing
+Wheezing at night
+Persistent cough
+Thick mucus
+Yellow mucus
+Green mucus
+Chest congestion
+Lung discomfort
+Air hunger
+Sharp chest pain
+Pain when coughing
+Pain when sneezing
+Pain when laughing
+Pain when bending
+Sudden weakness
+Sudden pain
+Sudden numbness
+Sudden swelling
+Sudden redness
+Sudden rash
+Sudden itching
+Sudden burning sensation
+Sudden tingling
+Sudden heaviness
+Persistent cough
+Persistent headache
+Persistent fatigue
+Persistent nausea
+Persistent vomiting
+Persistent diarrhea
+Persistent constipation
+Persistent pain
+Persistent swelling
+Persistent redness
+Sudden sweating episodes
+Feeling overheated
+Feeling very cold
+Sudden chills with fever
+Lack of sweating
+Excessive hunger
+Excessive thirst
+Sudden appetite loss
+Food cravings
+Difficulty chewing
+Arm pain
+Arm swelling
+Arm numbness
+Arm tingling
+Arm weakness
+Hand pain
+Hand swelling
+Hand numbness
+Hand tingling
+Hand stiffness
+Back stiffness
+Upper back pain
+Lower back pain
+Spine pain
+Tailbone pain
+Hip swelling
+Hip weakness
+Groin pain
+Groin swelling
+Pelvic pressure
+Abdominal pressure
+Abdominal tenderness
+Abdominal burning
+Abdominal cramps
+Abdominal heaviness
+Stomach fullness
+Stomach rumbling
+Pain after eating
+Pain before eating
+Pain after drinking
+Difficulty breathing while lying down
+Difficulty breathing while walking
+Sudden breathlessness
+Shallow breathing
+Fast breathing
+Slow breathing
+Chest muscle pain
+Rib pain
+Rib tenderness
+Rib swelling
+Body stiffness
+Body tremor
+Body shaking
+Body numbness
+Body tingling
+Body burning sensation
+Body swelling
+Body redness
+Body itching
+Body rash
+Face itching
+Face rash
+Face burning
+Face numbness
+Face tingling
+Eye swelling
+Eye burning
+Eye dryness
+Eye irritation
+Eye pressure
+Neck burning
+Neck tingling
+Neck numbness
+Neck stiffness
+Neck pressure
+Neck heaviness
+Neck rash
+Neck redness
+Neck swelling
+Neck pain when moving
+Shoulder burning
+Shoulder numbness
+Shoulder tingling
+Shoulder heaviness
+Shoulder redness
+Shoulder swelling
+Shoulder pressure
+Shoulder weakness
+Shoulder pain when lifting
+Shoulder stiffness when moving
+Arm heaviness
+Arm burning
+Arm redness
+Arm stiffness
+Arm pressure
+Arm rash
+Arm itching
+Arm tingling
+Arm numbness
+Arm weakness
+Asthma
+Asthma attack
+Asthma flare-up
+Exercise-induced asthma
+Severe wheezing
+Nighttime wheezing
+Chest tightness band
+Difficulty exhaling
+Migraine
+Aura
+Throbbing head pain
+Photophobia
+Phonophobia
+Visual disturbances
+One-sided headache
+Nausea with headache

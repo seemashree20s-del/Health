@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HealthSymphony | Chat</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="themes.css">
+    <script src="themeManager.js"></script>
+    <style>
+        /* Base Reset */
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: var(--font-main);
+            background: var(--bg-body);
+            color: var(--text-main);
+            height: 100vh; overflow: hidden;
+            display: flex; transition: all 0.4s ease;
+        }
+
+        .chat-app {
+            display: flex; width: 100%; height: 100%;
+            /* Backdrop filter for gradient/glass */
+            backdrop-filter: var(--glass-filter);
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 280px; background: var(--bg-sidebar); border-right: 1px solid var(--border-color);
+            display: flex; flex-direction: column; transition: all 0.3s ease; flex-shrink: 0;
+            backdrop-filter: var(--glass-filter);
+        }
+        .sidebar-header { padding: 1.5rem; border-bottom: 1px solid var(--border-color); }
+        .logo { font-family: 'Outfit', sans-serif; font-size: 1.5rem; font-weight: 700; display: flex; align-items: center; gap: 0.5rem; color: var(--text-main); margin-bottom: 1.5rem; }
+        .btn-new { width: 100%; background: transparent; border: 1px solid var(--border-color); color: var(--text-main); padding: 0.8rem; border-radius: 12px; font-weight: 600; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 0.5rem; margin-bottom: 0.5rem; }
+        .btn-new:hover { background: rgba(0,0,0,0.05); }
+        [data-theme="dark"] .btn-new:hover { background: rgba(255,255,255,0.05); }
+
+        .btn-premium { width: 100%; background: linear-gradient(135deg, #f59e0b, #fbbf24); color: #000; padding: 0.8rem; border-radius: 12px; font-weight: 700; cursor: pointer; border: none; display: flex; align-items: center; justify-content: center; gap: 0.5rem; transition: transform 0.2s; }
+        .btn-premium:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(245, 158, 11, 0.4); }
+
+        .nav-link { padding: 0.8rem 1rem; border-radius: 12px; color: var(--text-muted); text-decoration: none; font-weight: 500; display: flex; align-items: center; gap: 0.8rem; transition: all 0.2s; cursor: pointer; }
+        .nav-link:hover { background: rgba(139, 92, 246, 0.1); color: var(--accent); }
+        .nav-link.active { background: var(--gradient-primary); color: white; font-weight: 600; box-shadow: var(--shadow-sm); }
+
+        .sidebar-content { flex: 1; overflow-y: auto; padding: 1rem; }
+        .sidebar-content h3 { font-size: 0.85rem; text-transform: uppercase; color: var(--text-muted); margin-bottom: 0.8rem; letter-spacing: 1px; }
+        .session-list { list-style: none; display: flex; flex-direction: column; gap: 0.5rem; }
+        .session-item { padding: 0.8rem; border-radius: 8px; cursor: pointer; color: var(--text-main); font-size: 0.95rem; display: flex; align-items: center; gap: 0.8rem; transition: background 0.2s; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .session-item:hover, .session-item.active { background: rgba(128,128,128,0.1); font-weight: 500; }
+        
+        .sidebar-footer { padding: 1rem 1.5rem; border-top: 1px solid var(--border-color); display: flex; align-items: center; justify-content: space-between; }
+        .user-info { display: flex; align-items: center; gap: 0.5rem; font-weight: 500; font-size: 0.95rem; }
+        .avatar { width: 32px; height: 32px; border-radius: 50%; background: var(--border-color); display: flex; align-items: center; justify-content: center; font-size: 0.9rem; }
+        .logout-btn { background: transparent; border: none; color: var(--text-muted); cursor: pointer; font-size: 1.1rem; transition: color 0.2s; }
+        .logout-btn:hover { color: #ef4444; }
+
+        /* Main Chat Area */
+        .main-content { flex: 1; display: flex; flex-direction: column; position: relative; }
+        .chat-container { display: flex; flex-direction: column; height: calc(100vh - 4rem); padding-bottom: 2rem; position: relative; z-index: 10; max-width: 1000px; margin: 0 auto; width: 100%; }
+        .chat-header { padding: 1rem 2rem; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; background: rgba(255, 255, 255, 0.02); }
+        .chat-title { font-family: 'Outfit', sans-serif; font-size: 1.3rem; font-weight: 600; color: var(--text-main); }
+        
+        .chat-messages { flex: 1; padding: 2rem; overflow-y: auto; display: flex; flex-direction: column; gap: 1.5rem; scroll-behavior: smooth; position: relative; }
+        
+        /* Message Bubbles */
+        .message { display: flex; flex-direction: column; align-items: flex-start; max-width: 85%; animation: fadeIn 0.3s ease forwards; position: relative; }
+        .message.user { align-self: flex-end; align-items: flex-end; }
+        
+        .msg-content { padding: 1rem 1.4rem; font-size: 1rem; line-height: 1.6; white-space: pre-wrap; box-shadow: var(--shadow-sm); position: relative; transition: all 0.3s ease; }
+        
+        /* Welcome Card */
+        .welcome-card { background: var(--bg-surface); padding: 3rem; text-align: center; border-radius: var(--border-radius); border: 1px solid var(--border-color); margin: auto; max-width: 600px; box-shadow: var(--shadow-sm); backdrop-filter: var(--glass-filter); animation: float 6s ease-in-out infinite; }
+        @keyframes float { 0% { transform: translateY(0); } 50% { transform: translateY(-10px); } 100% { transform: translateY(0); } }
+
+        /* Hover Actions */
+        .msg-actions { position: absolute; top: -15px; opacity: 0; display: flex; gap: 5px; background: var(--bg-sidebar); border: 1px solid var(--border-color); padding: 4px; border-radius: 8px; transition: opacity 0.2s; box-shadow: var(--shadow-sm); z-index: 10; }
+        .message:hover .msg-actions { opacity: 1; }
+        .user .msg-actions { left: 0; }
+        .bot .msg-actions { right: 0; }
+        .action-btn { background: transparent; border: none; font-size: 0.85rem; color: var(--text-muted); cursor: pointer; padding: 4px 8px; border-radius: 4px; transition: color 0.1s; }
+        .action-btn:hover { background: rgba(139, 92, 246, 0.1); color: var(--accent); }
+
+        .message.bot .msg-content { background: var(--bubble-bot-bg); color: var(--bubble-bot-text); border-radius: 20px; border-bottom-left-radius: 4px; border: 1px solid var(--border-color); box-shadow: 0 4px 15px rgba(0,0,0,0.1); backdrop-filter: var(--glass-filter); }
+        .message.user .msg-content { background: var(--bubble-user-bg); color: var(--bubble-user-text); border-radius: 30px; border-bottom-right-radius: 4px; font-weight: 500; box-shadow: 0 4px 20px rgba(139, 92, 246, 0.3); animation: gradientShift 4s ease infinite; background-size: 200% 200%; }
+        
+        .msg-time { font-size: 0.75rem; color: var(--text-muted); margin-top: 0.4rem; padding: 0 0.5rem; opacity: 0.8; }
+
+        /* Floating Scroll Bottom */
+        .scroll-bottom-btn { position: absolute; bottom: 100px; right: 2rem; background: var(--bg-sidebar); border: 1px solid var(--border-color); color: var(--text-main); width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; opacity: 0; pointer-events: none; transition: 0.3s ease; box-shadow: var(--shadow-sm); z-index: 50; }
+        .scroll-bottom-btn.show { opacity: 1; pointer-events: auto; }
+        
+        /* Input Area */
+        .chat-input-wrapper { padding: 1rem 2rem 1.5rem; }
+        .input-area { display: flex; position: relative; max-width: 900px; margin: 0 auto; padding: 0.5rem; background: var(--bg-sidebar); border-radius: 30px; border: 1px solid var(--border-color); }
+        .chat-input { flex: 1; background: transparent; border: none; color: var(--text-main); font-size: 1rem; padding: 0.8rem 1.5rem; outline: none; }
+        .send-btn { width: 45px; height: 45px; background: var(--accent); color: #fff; border: none; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes bounce { 0%, 80%, 100% { transform: scale(0); } 40% { transform: scale(1); } }
+
+        /* Typing Indicator */
+        .typing span { display: inline-block; width: 6px; height: 6px; background-color: currentColor; border-radius: 50%; margin: 0 2px; animation: bounce 1.4s infinite ease-in-out both; }
+        .typing span:nth-child(1) { animation-delay: -0.32s; }
+        .typing span:nth-child(2) { animation-delay: -0.16s; }
+
+        /* Suggestion Chips */
+        .suggestion-chips { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 1rem; }
+        .chip { padding: 0.6rem 1.2rem; background: transparent; border: 1px solid var(--accent); color: var(--accent); border-radius: 20px; font-size: 0.9rem; cursor: pointer; transition: all 0.2s; font-weight: 500; }
+        .chip:hover { background: var(--accent); color: white; transform: translateY(-2px); }
+
+        @media(max-width: 768px) {
+            .sidebar { position: absolute; left: -100%; z-index: 1000; height: 100%; transition: left 0.3s ease; }
+            .sidebar.show { left: 0; }
+        }
+    </style>
+</head>
+<body data-theme="light">
+    <div class="chat-app">
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div class="logo"><i class="fa-solid fa-notes-medical"></i> HealthSymphony</div>
+                <nav class="nav-menu" style="margin-top: 1rem;">
+                    <a href="profile.html" class="nav-link"><i class="fa-solid fa-user"></i> Dashboard</a>
+                    <a href="chat.html" class="nav-link active"><i class="fa-solid fa-stethoscope"></i> AI Consult</a>
+                    <a href="locator.html" class="nav-link"><i class="fa-solid fa-map-location-dot"></i> Find Hospital</a>
+                    <a href="appointments.html" class="nav-link"><i class="fa-solid fa-calendar-check"></i> Appointments</a>
+                    <a href="support.html" class="nav-link"><i class="fa-solid fa-headset"></i> Help & Support</a>
+                </nav>
+                <button class="btn-new" onclick="createNewSession()">
+                    <i class="fa-solid fa-plus"></i> New Chat Thread
+                </button>
+            </div>
+            <div class="sidebar-content">
+                <h3>Recent Consultations</h3>
+                <ul class="session-list" id="session-list"></ul>
+            </div>
+            <div class="sidebar-footer">
+                <div class="user-info">
+                    <div class="avatar"><i class="fa-solid fa-user"></i></div>
+                    <span id="display-user-name">User</span>
+                </div>
+                <button class="logout-btn" onclick="logout()" title="Log out"><i class="fa-solid fa-sign-out-alt"></i></button>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <header class="chat-header">
+                <div style="display:flex; align-items:center; gap:1rem;">
+                    <i class="fa-solid fa-bars" style="cursor:pointer; font-size:1.2rem;" onclick="document.getElementById('sidebar').classList.toggle('show')"></i>
+                    <h2 class="chat-title" id="current-chat-title">New Consultation</h2>
+                </div>
+                <div id="premium-chat-action" style="display:none;">
+                    <a href="https://chat.whatsapp.com/G6t3FT6A0c3LHnw84BahiY" target="_blank" style="background-color: #25D366; color: white; padding: 0.6rem 1.2rem; border-radius: 8px; text-decoration: none; font-weight: 600; display: flex; align-items: center; gap: 0.5rem; box-shadow: 0 4px 10px rgba(37, 211, 102, 0.3); transition: transform 0.2s;"><i class="fa-brands fa-whatsapp" style="font-size: 1.2rem;"></i> 24/7 Expert Chat</a>
+                </div>
+            </header>
+
+            <div class="chat-container">
+                <div class="chat-messages" id="chat-messages">
+                    <div class="welcome-card">
+                        <i class="fa-solid fa-stethoscope" style="font-size: 3rem; color: var(--accent); margin-bottom: 1rem;"></i>
+                        <h2>How can I guide you today?</h2>
+                        <p>Describe your symptoms securely.</p>
+                    </div>
+                </div>
+
+                <div class="chat-input-wrapper">
+                    <form class="input-area glass-panel" id="chat-form" onsubmit="sendMessage(event)">
+                        <input type="text" id="chat-input" class="chat-input u-input" placeholder="Describe your symptoms..." autocomplete="off">
+                        <button type="submit" class="send-btn u-btn" id="send-btn"><i class="fa-solid fa-paper-plane"></i></button>
+                    </form>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- FIREBASE COMPAT SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
+    <script src="knowledgeBase.js"></script>
+    
+    <script>
+        const firebaseConfig = {
+          apiKey: "AIzaSyAgJ01RHrpzywI_EG2whluBDyj7kGvlQLw",
+          authDomain: "healthcare-chatbot-8b131.firebaseapp.com",
+          databaseURL: "https://healthcare-chatbot-8b131-default-rtdb.asia-southeast1.firebasedatabase.app/",
+          projectId: "healthcare-chatbot-8b131",
+          storageBucket: "healthcare-chatbot-8b131.firebasestorage.app",
+          messagingSenderId: "414500073416",
+          appId: "1:414500073416:web:a22115813f5e96922edafd",
+          measurementId: "G-B7KM52WJP0"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
+        // Handle floating scroll visibility
+        document.getElementById('chat-messages').addEventListener('scroll', (e) => {
+            const el = e.target;
+            const btn = document.getElementById('scroll-bottom');
+            if(btn && el.scrollTop < el.scrollHeight - el.clientHeight - 100) {
+                btn.classList.add('show');
+            } else if (btn) {
+                btn.classList.remove('show');
+            }
+        });
+
+        // Auth handling
+        const currentUser = JSON.parse(localStorage.getItem('hs_currentUser'));
+        if (!currentUser) { window.location.href = 'login.html'; }
+        else { 
+            document.getElementById('display-user-name').innerText = currentUser.name; 
+            if (currentUser.isPremium) {
+                document.getElementById('premium-chat-action').style.display = 'block';
+            }
+        }
+
+        let currentSessionId = null;
+
+        document.getElementById('chat-input').addEventListener('input', (e) => {
+            const btn = document.getElementById('send-btn');
+            btn.disabled = e.target.value.trim().length === 0;
+        });
+
+        function logout() {
+            localStorage.removeItem('hs_currentUser');
+            window.location.href = 'home.html';
+        }
+
+        function createNewSession() {
+            currentSessionId = null;
+            document.getElementById('current-chat-title').innerText = 'New Consultation';
+            document.getElementById('chat-messages').innerHTML = `
+                <div class="welcome-screen" style="text-align: center; padding: 3rem;">
+                    <i class="fa-solid fa-stethoscope welcome-icon" style="font-size: 3rem; color: var(--accent); margin-bottom:1rem;"></i>
+                    <h2>How can I guide you today?</h2>
+                    <p style="color: var(--text-muted); margin-bottom: 1.5rem;">Describe your symptoms securely. I will provide a structured assessment.</p>
+                    <div class="suggestion-chips" style="justify-content: center;">
+                        <button class="chip" onclick="sendSuggested('Fever')">Fever</button>
+                        <button class="chip" onclick="sendSuggested('Headache')">Headache</button>
+                        <button class="chip" onclick="sendSuggested('Fatigue')">Fatigue</button>
+                    </div>
+                </div>
+            `;
+            refreshSidebar();
+        }
+
+        let sessionsCache = [];
+
+        async function refreshSidebar() {
+            if (!currentUser) return;
+            try {
+                const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error("Timeout")), 5000));
+                sessionsCache = await Promise.race([
+                    (async () => {
+                        const snapshot = await db.ref('chat_sessions').orderByChild('userId').equalTo(currentUser.id).once('value');
+                        let fetched = [];
+                        snapshot.forEach((child) => {
+                            fetched.push({ id: child.key, ...child.val() });
+                        });
+                        return fetched;
+                    })(),
+                    timeoutPromise
+                ]);
+            } catch(e) {
+                console.warn("Firebase failed, loading sessions from local storage");
+                sessionsCache = JSON.parse(localStorage.getItem('hs_sessions') || '[]').filter(s => s.userId === currentUser.id);
+            }
+
+            sessionsCache.sort((a, b) => b.timestamp - a.timestamp);
+            
+            const list = document.getElementById('session-list');
+            list.innerHTML = '';
+            
+            sessionsCache.forEach(session => {
+                const li = document.createElement('li');
+                li.className = `session-item ${session.id === currentSessionId ? 'active' : ''}`;
+                li.onclick = () => loadSpecificSession(session.id);
+                li.innerHTML = `<i class="fa-solid fa-message"></i> ${session.title}`;
+                list.appendChild(li);
+            });
+        }
+
+        async function loadSpecificSession(sessionId) {
+            currentSessionId = sessionId;
+            refreshSidebar();
+            
+            const targetSession = sessionsCache.find(s => s.id === sessionId);
+            if(targetSession) document.getElementById('current-chat-title').innerText = targetSession.title;
+
+            let messages = [];
+            try {
+                const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error("Timeout")), 5000));
+                messages = await Promise.race([
+                    (async () => {
+                        const snapshot = await db.ref('chat_messages').orderByChild('sessionId').equalTo(sessionId).once('value');
+                        let fetched = [];
+                        snapshot.forEach((child) => { fetched.push(child.val()); });
+                        return fetched.sort((a, b) => a.timestamp - b.timestamp);
+                    })(),
+                    timeoutPromise
+                ]);
+            } catch(e) {
+                console.warn("Firebase failed, loading messages from local storage");
+                messages = JSON.parse(localStorage.getItem('hs_messages') || '[]').filter(m => m.sessionId === sessionId).sort((a,b) => a.timestamp - b.timestamp);
+            }
+
+            const chatArea = document.getElementById('chat-messages');
+            chatArea.innerHTML = '';
+            messages.forEach(msg => appendMessageToDOM(msg.sender, msg.text, msg.timestamp));
+            scrollToBottom(true);
+        }
+
+        function sendSuggested(text) {
+            const input = document.getElementById('chat-input');
+            input.value = text;
+            document.getElementById('send-btn').disabled = false;
+            document.getElementById('chat-form').dispatchEvent(new Event('submit'));
+        }
+
+        async function sendMessage(e) {
+            e.preventDefault();
+            const input = document.getElementById('chat-input');
+            const text = input.value.trim();
+            if(!text) return;
+
+            input.value = '';
+            document.getElementById('send-btn').disabled = true;
+
+            if (!currentSessionId) {
+                const newSession = {
+                    userId: currentUser.id,
+                    title: text.length > 20 ? text.substring(0,20)+'...' : text,
+                    timestamp: Date.now()
+                };
+                try {
+                    const newSessionRef = db.ref('chat_sessions').push();
+                    await newSessionRef.set(newSession);
+                    currentSessionId = newSessionRef.key;
+                } catch(err) {
+                    console.warn("Firebase failed, saving session locally", err);
+                    currentSessionId = 'local_' + Date.now().toString();
+                    const localSessions = JSON.parse(localStorage.getItem('hs_sessions') || '[]');
+                    localSessions.push({ id: currentSessionId, ...newSession });
+                    localStorage.setItem('hs_sessions', JSON.stringify(localSessions));
+                }
+                
+                document.getElementById('chat-messages').innerHTML = '';
+                document.getElementById('current-chat-title').innerText = newSession.title;
+                refreshSidebar();
+            }
+
+            const msgTime = Date.now();
+            await saveMessage('user', text, msgTime);
+            appendMessageToDOM('user', text, msgTime);
+            scrollToBottom();
+
+            simulateAIResponse(text);
+        }
+
+        async function saveMessage(sender, text, timestamp) {
+            const msgData = {
+                sessionId: currentSessionId,
+                sender: sender,
+                text: text,
+                timestamp: timestamp
+            };
+            try {
+                await db.ref('chat_messages').push().set(msgData);
+            } catch(e) {
+                console.warn("Firebase failed, saving message locally");
+                const localMsgs = JSON.parse(localStorage.getItem('hs_messages') || '[]');
+                localMsgs.push(msgData);
+                localStorage.setItem('hs_messages', JSON.stringify(localMsgs));
+            }
+        }
+
+        function appendMessageToDOM(sender, text, timestamp, buttons = null) {
+            const chatArea = document.getElementById('chat-messages');
+            if (document.querySelector('.welcome-screen')) document.querySelector('.welcome-screen').remove();
+            
+            const div = document.createElement('div');
+            div.className = `message ${sender}`;
+            
+            const timeStr = new Date(timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            
+            // Security escape & layout mapping (strict bullets)
+            let safeText = text.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+            
+            div.innerHTML = `
+                <div class="msg-actions">
+                    <button class="action-btn" onclick="copyText(this)" title="Copy Text"><i class="fa-regular fa-copy"></i></button>
+                    ${sender === 'bot' ? `<button class="action-btn" onclick="reactToText(this)" title="Like"><i class="fa-regular fa-thumbs-up"></i></button>` : ''}
+                </div>
+                <div class="msg-content">${safeText}</div>
+                <div class="msg-time">${timeStr}</div>
+            `;
+            chatArea.appendChild(div);
+        }
+        
+        function copyText(btnElement) {
+            const bubbleDiv = btnElement.closest('.message').querySelector('.msg-content');
+            navigator.clipboard.writeText(bubbleDiv.innerText);
+            const icon = btnElement.querySelector('i');
+            icon.className = 'fa-solid fa-check';
+            setTimeout(() => { icon.className = 'fa-regular fa-copy'; }, 2000);
+        }
+        
+        function reactToText(btnElement) {
+            const icon = btnElement.querySelector('i');
+            icon.className = 'fa-solid fa-thumbs-up';
+            icon.style.color = 'var(--accent)';
+        }
+
+        function scrollToBottom(force=false) {
+            const chatArea = document.getElementById('chat-messages');
+            chatArea.scrollTo({top: chatArea.scrollHeight, behavior: force ? 'smooth' : 'auto'});
+        }
+
+        function simulateAIResponse(userText) {
+            const chatArea = document.getElementById('chat-messages');
+            
+            const typingDiv = document.createElement('div');
+            typingDiv.className = 'message bot';
+            typingDiv.id = 'typing-indicator';
+            typingDiv.innerHTML = `<div class="msg-content typing"><span></span><span></span><span></span></div>`;
+            chatArea.appendChild(typingDiv);
+            scrollToBottom();
+
+            setTimeout(() => {
+                if (document.getElementById('typing-indicator')) document.getElementById('typing-indicator').remove();
+                
+                // Fetch bullet-point analysis from local mock JS map
+                const analysis = window.KnowledgeBase.analyze(userText);
+                const msgTime = Date.now();
+                saveMessage('bot', analysis.text, msgTime);
+                appendMessageToDOM('bot', analysis.text, msgTime);
+
+                // Inject follow-ups as generic minimal text options as per instruction
+                if(analysis.followUps && analysis.followUps.length > 0) {
+                    let btnHTML = analysis.followUps.map(b => `<button class="chip" onclick="sendSuggested('${b.replace(/'/g, "\\'")}')">${b}</button>`).join('');
+                    const subDiv = document.createElement('div');
+                    subDiv.className = 'suggestion-chips';
+                    subDiv.innerHTML = btnHTML;
+                    chatArea.appendChild(subDiv);
+                }
+
+                scrollToBottom();
+            }, 800 + Math.random() * 500);
+        }
+
+        if (currentUser) { refreshSidebar(); }
+    </script>
+</body>
+</html>

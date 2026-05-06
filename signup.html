@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HealthSymphony | Sign Up</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="themes.css">
+    <script src="themeManager.js"></script>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Inter', sans-serif;
+            min-height: 100vh;
+            display: flex; justify-content: center; align-items: center;
+            padding: 1rem;
+        }
+        .login-wrapper {
+            padding: 3rem;
+            width: 100%; max-width: 450px;
+            text-align: center;
+        }
+        .login-wrapper:hover { box-shadow: 0 25px 50px rgba(0,0,0,0.08); transform: translateY(-2px); }
+        .logo { font-family: 'Outfit', sans-serif; font-size: 1.8rem; font-weight: 800; color: var(--text-main); margin-bottom: 0.5rem; }
+        
+        .subtitle { color: var(--text-muted); font-size: 0.95rem; margin-bottom: 2rem; line-height: 1.5; }
+        
+        .input-group { text-align: left; margin-bottom: 1.2rem; position: relative; }
+        .input-group label { display: block; font-size: 0.9rem; font-weight: 500; margin-bottom: 0.5rem; color: var(--text-main); }
+        .input-field {
+            width: 100%; padding: 0.9rem 1rem;
+            font-size: 1rem; font-family: 'Inter', sans-serif;
+        }
+        .toggle-pwd { position: absolute; right: 1rem; top: 2.3rem; color: var(--text-muted); cursor: pointer; transition: color 0.2s; }
+        .toggle-pwd:hover { color: var(--accent); }
+
+        .btn-primary { width: 100%; padding: 1rem; font-weight: 600; font-size: 1rem; margin-top: 1rem; }
+        
+        .error-msg { color: #ef4444; font-size: 0.85rem; min-height: 1.2rem; margin-top: 0.5rem; display: block; text-align: left; font-weight: 500; }
+        .auth-footer { margin-top: 2rem; font-size: 0.95rem; color: var(--text-muted); }
+        .auth-footer a { color: var(--accent); text-decoration: none; font-weight: 600; transition: color 0.2s; }
+        
+        .back-nav { position: absolute; top: 1.5rem; left: 1.5rem; color: var(--text-muted); text-decoration: none; font-size: 0.9rem; font-weight: 500; display:flex; align-items:center; gap:0.5rem; transition: color 0.2s; }
+        .back-nav:hover { color: var(--accent); }
+    </style>
+</head>
+<body>
+    <a href="home.html" class="back-nav"><i class="fa-solid fa-arrow-left"></i> Back to Home</a>
+    
+    <div class="login-wrapper glass-panel">
+        <div class="logo"><i class="fa-solid fa-notes-medical gradient-text-universal"></i> <span class="gradient-text-universal">HealthSymphony</span></div>
+        <p class="subtitle">Create Account<br><span style="font-size: 0.85rem;">Start your intelligent health tracking securely.</span></p>
+        
+        <form onsubmit="handleRegister(event)">
+            <div class="input-group">
+                <label for="name">Full Name</label>
+                <input type="text" id="name" class="input-field u-input" placeholder="John Doe">
+            </div>
+            <div class="input-group">
+                <label for="email">Email Address</label>
+                <input type="email" id="email" class="input-field u-input" placeholder="name@example.com">
+            </div>
+            <div class="input-group">
+                <label for="phone">Phone Number</label>
+                <input type="tel" id="phone" class="input-field u-input" pattern="[0-9]{10}" placeholder="10-digit mobile">
+            </div>
+            <div class="input-group">
+                <label for="password">Create Password</label>
+                <input type="password" id="password" class="input-field u-input" placeholder="••••••••">
+                <i class="fa-solid fa-eye-slash toggle-pwd" id="toggle-icon-1" onclick="togglePassword('password', 'toggle-icon-1')"></i>
+            </div>
+            <div class="input-group">
+                <label for="confirm-password">Confirm Password</label>
+                <input type="password" id="confirm-password" class="input-field u-input" placeholder="••••••••">
+                <i class="fa-solid fa-eye-slash toggle-pwd" id="toggle-icon-2" onclick="togglePassword('confirm-password', 'toggle-icon-2')"></i>
+                <span id="auth-error" class="error-msg"></span>
+            </div>
+            
+            <button type="submit" class="btn-primary u-btn" id="submit-btn">Sign Up Now</button>
+        </form>
+        
+        <div class="auth-footer">
+            Already have an account? <a href="login.html">Sign In here</a>
+        </div>
+    </div>
+
+    <!-- FIREBASE COMPAT SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
+    
+    <script>
+        const firebaseConfig = {
+          apiKey: "AIzaSyAgJ01RHrpzywI_EG2whluBDyj7kGvlQLw",
+          authDomain: "healthcare-chatbot-8b131.firebaseapp.com",
+          databaseURL: "https://healthcare-chatbot-8b131-default-rtdb.asia-southeast1.firebasedatabase.app/",
+          projectId: "healthcare-chatbot-8b131",
+          storageBucket: "healthcare-chatbot-8b131.firebasestorage.app",
+          messagingSenderId: "414500073416",
+          appId: "1:414500073416:web:a22115813f5e96922edafd",
+          measurementId: "G-B7KM52WJP0"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
+        window.firebaseRegisterUser = async function(userData) {
+            // Create a timeout promise to prevent hanging if offline
+            const timeoutPromise = new Promise((_, reject) => 
+                setTimeout(() => reject(new Error("Firebase connection timed out")), 5000)
+            );
+
+            try {
+                return await Promise.race([
+                    (async () => {
+                        const usersRef = db.ref('users');
+                        const snapshot = await usersRef.orderByChild('email').equalTo(userData.email).once('value');
+                        
+                        if (snapshot.exists()) {
+                            throw new Error("Email already registered.");
+                        }
+                        
+                        const newUserRef = usersRef.push();
+                        await newUserRef.set(userData);
+                        return { id: newUserRef.key, ...userData };
+                    })(),
+                    timeoutPromise
+                ]);
+            } catch (error) {
+                if (error.message === "Email already registered.") throw error;
+                
+                // Fallback to LocalStorage if Firebase fails/hangs
+                console.warn("Firebase failed, using local storage fallback:", error);
+                let users = JSON.parse(localStorage.getItem('hs_users') || '[]');
+                if (users.find(u => u.email === userData.email)) {
+                    throw new Error("Email already registered.");
+                }
+                const newUser = { id: 'local_' + Date.now().toString(), ...userData };
+                users.push(newUser);
+                localStorage.setItem('hs_users', JSON.stringify(users));
+                return newUser;
+            }
+        };
+    </script>
+    <script>
+        function togglePassword(inputId, iconId) {
+            const pwd = document.getElementById(inputId);
+            const icon = document.getElementById(iconId);
+            if (pwd.type === 'password') {
+                pwd.type = 'text';
+                icon.className = 'fa-solid fa-eye toggle-pwd';
+            } else {
+                pwd.type = 'password';
+                icon.className = 'fa-solid fa-eye-slash toggle-pwd';
+            }
+        }
+
+        async function handleRegister(e) {
+            e.preventDefault();
+            const errEl = document.getElementById('auth-error');
+            const submitBtn = document.getElementById('submit-btn');
+            
+            errEl.innerText = '';
+            
+            try {
+                const name = document.getElementById('name').value.trim();
+                const email = document.getElementById('email').value.trim();
+                const phone = document.getElementById('phone').value.trim();
+                const password = document.getElementById('password').value.trim();
+                const confirmPassword = document.getElementById('confirm-password').value.trim();
+                
+                if (!name || !email || !phone || !password || !confirmPassword) {
+                    errEl.innerText = '* Please fill in all fields (Full Name is required).';
+                    return shakeForm();
+                }
+
+                if(password !== confirmPassword) {
+                    errEl.innerText = '* Passwords do not match.';
+                    return shakeForm();
+                }
+
+                const phoneRegex = /^[0-9]{10}$/;
+                if (!phoneRegex.test(phone)) {
+                    errEl.innerText = '* Phone must be exactly 10 digits.';
+                    return shakeForm();
+                }
+
+                if (!window.firebaseRegisterUser) {
+                    errEl.innerText = '* Services are loading, please try again.';
+                    return shakeForm();
+                }
+                
+                submitBtn.innerText = 'Creating Account...';
+                submitBtn.disabled = true;
+
+                const savedUser = await window.firebaseRegisterUser({ 
+                    name, 
+                    email, 
+                    phone, 
+                    password, 
+                    createdAt: new Date().toISOString() 
+                });
+                
+                localStorage.setItem('hs_currentUser', JSON.stringify({
+                    id: savedUser.id,
+                    name: savedUser.name,
+                    email: savedUser.email
+                }));
+                window.location.href = 'chat.html';
+            } catch(error) {
+                submitBtn.innerText = 'Sign Up Now';
+                submitBtn.disabled = false;
+                errEl.innerText = '* ' + error.message;
+                shakeForm();
+            }
+        }
+
+        function shakeForm() {
+            const wrap = document.querySelector('.login-wrapper');
+            wrap.style.transform = 'translateX(-10px)';
+            setTimeout(()=> wrap.style.transform = 'translateX(10px)', 100);
+            setTimeout(()=> wrap.style.transform = 'translateX(0)', 200);
+        }
+    </script>
+</body>
+</html>
