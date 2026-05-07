@@ -108,7 +108,6 @@
                 <p style="color: var(--text-muted); margin-top: 0.5rem;">Here is an overview of your health profile.</p>
             </div>
             <div style="display:flex; gap: 1rem;">
-
                 <button class="btn-primary u-btn" onclick="window.location.href='chat.html'"><i class="fa-solid fa-plus"></i> New Checkup</button>
             </div>
         </div>
@@ -306,6 +305,9 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
+        // API Base URL
+        const API_URL = 'https://health-3w4x.onrender.com';
+
         // Check Authentication
         const currentUser = JSON.parse(localStorage.getItem('hs_currentUser'));
         if (!currentUser) { window.location.href = 'login.html'; }
@@ -416,7 +418,22 @@
                 weight: document.getElementById('bmi-weight').value,
                 lastUpdated: Date.now()
             };
+
+            // API Call (primary) — Firebase is fallback
+            try {
+                await fetch(API_URL + '/api/profile/update', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        userId: currentUser.id,
+                        ...profileData
+                    })
+                });
+            } catch (apiErr) {
+                console.warn("API failed, using Firebase fallback:", apiErr);
+            }
             
+            // Firebase fallback / secondary save
             try {
                 await db.ref('profiles/' + currentUser.id).update(profileData);
                 const msg = document.getElementById('save-msg');
@@ -493,14 +510,28 @@
         async function addFamilyMember() {
             const email = document.getElementById('family-email').value;
             if(!email) return alert("Please enter an email address.");
-            
+
+            const inviteData = {
+                ownerId: currentUser.id,
+                email: email,
+                status: 'Pending',
+                timestamp: Date.now()
+            };
+
+            // API Call (primary) — Firebase is fallback
             try {
-                await db.ref('family_members').push().set({
-                    ownerId: currentUser.id,
-                    email: email,
-                    status: 'Pending',
-                    timestamp: Date.now()
+                await fetch(API_URL + '/api/family/invite', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(inviteData)
                 });
+            } catch (apiErr) {
+                console.warn("API failed, using Firebase fallback:", apiErr);
+            }
+
+            // Firebase fallback / secondary save
+            try {
+                await db.ref('family_members').push().set(inviteData);
                 document.getElementById('family-email').value = '';
                 loadProfile(); // Refresh family list
             } catch (e) {
