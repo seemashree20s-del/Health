@@ -142,6 +142,9 @@
     <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
     <script>
+        // API Configuration
+        const API_URL = 'https://health-3w4x.onrender.com';
+
         const firebaseConfig = {
           apiKey: "AIzaSyAgJ01RHrpzywI_EG2whluBDyj7kGvlQLw",
           authDomain: "healthcare-chatbot-8b131.firebaseapp.com",
@@ -187,30 +190,58 @@
             const issueType = document.getElementById('issueType').value;
             const description = document.getElementById('description').value;
             
-            try {
-                await db.ref('support_tickets').push({
-                    name: currentUser.name,
-                    email: currentUser.email,
-                    issueType: issueType,
-                    description: description,
-                    timestamp: new Date().toISOString(),
-                    status: 'Open'
-                });
+            const ticketData = {
+                name: currentUser.name,
+                email: currentUser.email,
+                issueType: issueType,
+                description: description,
+                timestamp: new Date().toISOString(),
+                status: 'Open'
+            };
 
-                document.getElementById('support-form').reset();
-                document.getElementById('success-message').style.display = 'block';
-                
-                // Hide success message after 5 seconds
-                setTimeout(() => {
-                    document.getElementById('success-message').style.display = 'none';
-                }, 5000);
-            } catch(error) {
-                console.error("Firebase Support Error:", error);
-                alert("Failed to submit request. Please try again later or call the helpline directly.");
-            } finally {
-                btn.innerHTML = '<i class="fa-solid fa-paper-plane"></i> Submit Ticket to Support Team';
-                btn.disabled = false;
+            try {
+                // Try Backend API first
+                const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error("Timeout")), 5000));
+                await Promise.race([
+                    (async () => {
+                        const response = await fetch(API_URL + '/api/support/ticket', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(ticketData)
+                        });
+                        if (!response.ok) throw new Error('API Error: ' + response.status);
+                        return await response.json();
+                    })(),
+                    timeoutPromise
+                ]);
+            } catch (e) {
+                console.warn("Backend API failed, trying Firebase:", e);
+                try {
+                    // Fallback to Firebase
+                    const fbTimeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error("Timeout")), 5000));
+                    await Promise.race([
+                        db.ref('support_tickets').push(ticketData),
+                        fbTimeoutPromise
+                    ]);
+                } catch(fbError) {
+                    console.error("Firebase also failed:", fbError);
+                    alert("Failed to submit request. Please try again later or call the helpline directly.");
+                    btn.innerHTML = '<i class="fa-solid fa-paper-plane"></i> Submit Ticket to Support Team';
+                    btn.disabled = false;
+                    return;
+                }
             }
+
+            document.getElementById('support-form').reset();
+            document.getElementById('success-message').style.display = 'block';
+            
+            // Hide success message after 5 seconds
+            setTimeout(() => {
+                document.getElementById('success-message').style.display = 'none';
+            }, 5000);
+
+            btn.innerHTML = '<i class="fa-solid fa-paper-plane"></i> Submit Ticket to Support Team';
+            btn.disabled = false;
         });
     </script>
 </body>
