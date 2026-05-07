@@ -90,6 +90,9 @@
     <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
     
     <script>
+        // API Configuration
+        const API_URL = 'https://health-3w4x.onrender.com';
+
         const firebaseConfig = {
           apiKey: "AIzaSyAgJ01RHrpzywI_EG2whluBDyj7kGvlQLw",
           authDomain: "healthcare-chatbot-8b131.firebaseapp.com",
@@ -185,21 +188,49 @@
                     return shakeForm();
                 }
 
-                if (!window.firebaseRegisterUser) {
-                    errEl.innerText = '* Services are loading, please try again.';
-                    return shakeForm();
-                }
-                
                 submitBtn.innerText = 'Creating Account...';
                 submitBtn.disabled = true;
 
-                const savedUser = await window.firebaseRegisterUser({ 
+                const userData = { 
                     name, 
                     email, 
                     phone, 
                     password, 
                     createdAt: new Date().toISOString() 
-                });
+                };
+
+                let savedUser = null;
+
+                // Try Backend API first
+                try {
+                    const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error("Timeout")), 5000));
+                    const response = await Promise.race([
+                        fetch(API_URL + '/api/auth/register', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(userData)
+                        }),
+                        timeoutPromise
+                    ]);
+                    
+                    if (response.ok) {
+                        savedUser = await response.json();
+                    } else {
+                        throw new Error('API Error: ' + response.status);
+                    }
+                } catch (apiErr) {
+                    console.warn("Backend API failed, trying Firebase:", apiErr);
+                    
+                    // Fallback to Firebase
+                    if (!window.firebaseRegisterUser) {
+                        errEl.innerText = '* Services are loading, please try again.';
+                        submitBtn.innerText = 'Sign Up Now';
+                        submitBtn.disabled = false;
+                        return shakeForm();
+                    }
+                    
+                    savedUser = await window.firebaseRegisterUser(userData);
+                }
                 
                 localStorage.setItem('hs_currentUser', JSON.stringify({
                     id: savedUser.id,
