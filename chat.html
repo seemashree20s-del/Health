@@ -182,6 +182,9 @@
     <script src="knowledgeBase.js"></script>
     
     <script>
+        // API Configuration
+        const API_URL = 'https://health-3w4x.onrender.com';
+
         const firebaseConfig = {
           apiKey: "AIzaSyAgJ01RHrpzywI_EG2whluBDyj7kGvlQLw",
           authDomain: "healthcare-chatbot-8b131.firebaseapp.com",
@@ -364,15 +367,41 @@
                 sessionId: currentSessionId,
                 sender: sender,
                 text: text,
-                timestamp: timestamp
+                timestamp: timestamp,
+                userId: currentUser.id,
+                email: currentUser.email
             };
             try {
-                await db.ref('chat_messages').push().set(msgData);
+                // Try Backend API first
+                const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error("Timeout")), 5000));
+                await Promise.race([
+                    (async () => {
+                        const response = await fetch(API_URL + '/api/messages', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(msgData)
+                        });
+                        if (!response.ok) throw new Error('API Error');
+                        return await response.json();
+                    })(),
+                    timeoutPromise
+                ]);
             } catch(e) {
-                console.warn("Firebase failed, saving message locally");
-                const localMsgs = JSON.parse(localStorage.getItem('hs_messages') || '[]');
-                localMsgs.push(msgData);
-                localStorage.setItem('hs_messages', JSON.stringify(localMsgs));
+                console.warn("Backend API failed, using Firebase:", e);
+                try {
+                    // Fallback to Firebase
+                    const fbTimeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error("Timeout")), 5000));
+                    await Promise.race([
+                        db.ref('chat_messages').push().set(msgData),
+                        fbTimeoutPromise
+                    ]);
+                } catch(fbErr) {
+                    console.warn("Firebase also failed, saving locally:", fbErr);
+                    // Final fallback to local storage
+                    const localMsgs = JSON.parse(localStorage.getItem('hs_messages') || '[]');
+                    localMsgs.push(msgData);
+                    localStorage.setItem('hs_messages', JSON.stringify(localMsgs));
+                }
             }
         }
 
