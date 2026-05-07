@@ -81,6 +81,9 @@
     <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
     
     <script>
+        // API Configuration
+        const API_URL = 'https://health-3w4x.onrender.com';
+
         const firebaseConfig = {
           apiKey: "AIzaSyAgJ01RHrpzywI_EG2whluBDyj7kGvlQLw",
           authDomain: "healthcare-chatbot-8b131.firebaseapp.com",
@@ -169,15 +172,41 @@
                     return shakeWrap();
                 }
 
-                if (!window.firebaseLoginUser) {
-                    errEl.innerText = '* Services are loading, please try again.';
-                    return shakeWrap();
-                }
-                
                 submitBtn.innerText = 'Signing In...';
                 submitBtn.disabled = true;
 
-                const user = await window.firebaseLoginUser(email, password);
+                let user = null;
+
+                // Try Backend API first
+                try {
+                    const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error("Timeout")), 5000));
+                    const response = await Promise.race([
+                        fetch(API_URL + '/api/auth/login', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ email, password })
+                        }),
+                        timeoutPromise
+                    ]);
+                    
+                    if (response.ok) {
+                        user = await response.json();
+                    } else {
+                        throw new Error('API Error: ' + response.status);
+                    }
+                } catch (apiErr) {
+                    console.warn("Backend API failed, trying Firebase:", apiErr);
+                    
+                    // Fallback to Firebase
+                    if (!window.firebaseLoginUser) {
+                        errEl.innerText = '* Services are loading, please try again.';
+                        submitBtn.innerText = 'Sign In to Dashboard';
+                        submitBtn.disabled = false;
+                        return shakeWrap();
+                    }
+                    
+                    user = await window.firebaseLoginUser(email, password);
+                }
                 
                 localStorage.setItem('hs_currentUser', JSON.stringify({
                     id: user.id,
