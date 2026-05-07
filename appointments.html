@@ -279,6 +279,9 @@
     <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
     
     <script>
+        // API Configuration
+        const API_URL = 'https://health-3w4x.onrender.com';
+
         const firebaseConfig = {
           apiKey: "AIzaSyAgJ01RHrpzywI_EG2whluBDyj7kGvlQLw",
           authDomain: "healthcare-chatbot-8b131.firebaseapp.com",
@@ -361,23 +364,42 @@
             };
 
             try {
-                // Try Firebase with a 5-second timeout
+                // Try Backend API first with a 5-second timeout
                 const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error("Timeout")), 5000));
                 await Promise.race([
                     (async () => {
-                        const newApptRef = db.ref('appointments').push();
-                        await newApptRef.set(apptData);
+                        const response = await fetch(API_URL + '/api/appointments', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(apptData)
+                        });
+                        if (!response.ok) throw new Error('API Error: ' + response.status);
+                        return await response.json();
                     })(),
                     timeoutPromise
                 ]);
-                alert("Appointment request submitted successfully. You will receive a confirmation shortly.");
+                alert("Appointment request submitted successfully via backend. You will receive a confirmation shortly.");
             } catch(error) {
-                console.warn("Firebase failed, saving to local storage:", error);
-                // Fallback to local storage
-                let localAppts = JSON.parse(localStorage.getItem('hs_appointments') || '[]');
-                localAppts.push({ id: 'local_' + Date.now(), ...apptData });
-                localStorage.setItem('hs_appointments', JSON.stringify(localAppts));
-                alert("Appointment saved locally successfully.");
+                console.warn("Backend API failed, trying Firebase:", error);
+                try {
+                    // Fallback to Firebase
+                    const fbTimeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error("Timeout")), 5000));
+                    await Promise.race([
+                        (async () => {
+                            const newApptRef = db.ref('appointments').push();
+                            await newApptRef.set(apptData);
+                        })(),
+                        fbTimeoutPromise
+                    ]);
+                    alert("Appointment request submitted successfully via Firebase. You will receive a confirmation shortly.");
+                } catch(fbError) {
+                    console.warn("Firebase also failed, saving to local storage:", fbError);
+                    // Final fallback to local storage
+                    let localAppts = JSON.parse(localStorage.getItem('hs_appointments') || '[]');
+                    localAppts.push({ id: 'local_' + Date.now(), ...apptData });
+                    localStorage.setItem('hs_appointments', JSON.stringify(localAppts));
+                    alert("Appointment saved locally (offline mode). Will sync when connection is restored.");
+                }
             }
 
             btn.innerText = 'Confirm Booking';
