@@ -11,6 +11,15 @@ const SECRET_KEY = process.env.SECRET_KEY || "healthsymphony-secret-key-placehol
 app.use(cors());
 app.use(express.json());
 
+// Root routes
+app.get('/', (req, res) => {
+    res.json({ message: 'HealthSymphony API is running ✅', status: 'active' });
+});
+
+app.get('/health', (req, res) => {
+    res.json({ status: 'ok', timestamp: new Date().toISOString() });
+});
+
 // Initialize PostgreSQL database
 const pool = new Pool({
     connectionString: process.env.DATABASE_URL,
@@ -126,10 +135,19 @@ const initDatabase = async () => {
 
 initDatabase();
 
-// Routes
+// =====================
+// Authentication Routes
+// =====================
+
 app.post('/api/auth/signup', async (req, res) => {
     try {
         const { name, email, phone, password } = req.body;
+        
+        // Validation
+        if (!name || !email || !phone || !password) {
+            return res.status(400).json({ success: false, message: 'All fields required' });
+        }
+
         const hashedPassword = await bcrypt.hash(password, 10);
         const userId = Date.now().toString();
         
@@ -138,8 +156,11 @@ app.post('/api/auth/signup', async (req, res) => {
             [userId, name, email, phone, hashedPassword]
         );
         
-        res.json({ success: true, userId });
+        res.json({ success: true, userId, message: 'Account created successfully' });
     } catch (error) {
+        if (error.message.includes('duplicate key')) {
+            return res.status(400).json({ success: false, message: 'Email already registered' });
+        }
         res.status(400).json({ success: false, message: error.message });
     }
 });
@@ -147,6 +168,10 @@ app.post('/api/auth/signup', async (req, res) => {
 app.post('/api/auth/login', async (req, res) => {
     try {
         const { email, password } = req.body;
+        
+        if (!email || !password) {
+            return res.status(400).json({ success: false, message: 'Email and password required' });
+        }
         
         const result = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
         const user = result.rows[0];
@@ -156,15 +181,26 @@ app.post('/api/auth/login', async (req, res) => {
         }
         
         const token = jwt.sign({ userId: user.id }, SECRET_KEY, { expiresIn: '24h' });
-        res.json({ success: true, token, userId: user.id, name: user.name });
+        res.json({ 
+            success: true, 
+            token, 
+            userId: user.id, 
+            name: user.name,
+            email: user.email,
+            isPremium: user.isPremium
+        });
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });
     }
 });
 
+// =====================
+// Hospital Routes
+// =====================
+
 app.get('/api/hospitals', async (req, res) => {
     try {
-        const result = await pool.query('SELECT * FROM hospitals');
+        const result = await pool.query('SELECT * FROM hospitals ORDER BY name ASC');
         res.json(result.rows);
     } catch (error) {
         res.status(500).json({ error: error.message });
@@ -174,7 +210,7 @@ app.get('/api/hospitals', async (req, res) => {
 app.get('/api/hospitals/:district', async (req, res) => {
     try {
         const result = await pool.query(
-            'SELECT * FROM hospitals WHERE LOWER(district) = LOWER($1)',
+            'SELECT * FROM hospitals WHERE LOWER(district) = LOWER($1) ORDER BY name ASC',
             [req.params.district]
         );
         res.json(result.rows);
@@ -183,9 +219,18 @@ app.get('/api/hospitals/:district', async (req, res) => {
     }
 });
 
+// =====================
+// Chat Session Routes
+// =====================
+
 app.post('/api/sessions', async (req, res) => {
     try {
         const { userId, title } = req.body;
+        
+        if (!userId || !title) {
+            return res.status(400).json({ success: false, message: 'userId and title required' });
+        }
+        
         const sessionId = Date.now().toString();
         
         await pool.query(
@@ -194,22 +239,6 @@ app.post('/api/sessions', async (req, res) => {
         );
         
         res.json({ success: true, sessionId });
-    } catch (error) {
-        res.status(500).json({ error: error.message });
-    }
-});
-
-app.post('/api/messages', async (req, res) => {
-    try {
-        const { sessionId, sender, text, buttons } = req.body;
-        const messageId = Date.now().toString();
-        
-        await pool.query(
-            'INSERT INTO messages (id, sessionId, sender, text, timestamp, buttons) VALUES ($1, $2, $3, $4, $5, $6)',
-            [messageId, sessionId, sender, text, Date.now(), JSON.stringify(buttons)]
-        );
-        
-        res.json({ success: true, messageId });
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
@@ -227,6 +256,31 @@ app.get('/api/sessions/:userId', async (req, res) => {
     }
 });
 
+// =====================
+// Chat Message Routes
+// =====================
+
+app.post('/api/messages', async (req, res) => {
+    try {
+        const { sessionId, sender, text, buttons } = req.body;
+        
+        if (!sessionId || !sender || !text) {
+            return res.status(400).json({ success: false, message: 'sessionId, sender, and text required' });
+        }
+        
+        const messageId = Date.now().toString();
+        
+        await pool.query(
+            'INSERT INTO messages (id, sessionId, sender, text, timestamp, buttons) VALUES ($1, $2, $3, $4, $5, $6)',
+            [messageId, sessionId, sender, text, Date.now(), JSON.stringify(buttons || [])]
+        );
+        
+        res.json({ success: true, messageId });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
 app.get('/api/messages/:sessionId', async (req, res) => {
     try {
         const result = await pool.query(
@@ -239,6 +293,74 @@ app.get('/api/messages/:sessionId', async (req, res) => {
     }
 });
 
+// =====================
+// Premium/Subscription Routes
+// =====================
+
+app.post('/api/premium/upgrade', async (req, res) => {
+    try {
+        const { userId, planType } = req.body;
+        
+        if (!userId || !planType) {
+            return res.status(400).json({ success: false, message: 'userId and planType required' });
+        }
+        
+        const subscriptionId = Date.now().toString();
+        const startDate = Date.now();
+        const expiryDate = new Date(startDate + 365 * 24 * 60 * 60 * 1000).getTime(); // 1 year
+        
+        await pool.query(
+            'INSERT INTO subscriptions (id, userId, planType, startDate, expiryDate, status) VALUES ($1, $2, $3, $4, $5, $6)',
+            [subscriptionId, userId, planType, startDate, expiryDate, 'active']
+        );
+        
+        await pool.query(
+            'UPDATE users SET isPremium = true WHERE id = $1',
+            [userId]
+        );
+        
+        res.json({ success: true, subscriptionId, message: 'Premium upgrade successful' });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+app.get('/api/premium/status/:userId', async (req, res) => {
+    try {
+        const result = await pool.query(
+            'SELECT isPremium FROM users WHERE id = $1',
+            [req.params.userId]
+        );
+        
+        if (result.rows.length === 0) {
+            return res.status(404).json({ error: 'User not found' });
+        }
+        
+        res.json({ isPremium: result.rows[0].isPremium });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// =====================
+// Error Handling
+// =====================
+
+app.use((err, req, res, next) => {
+    console.error('Error:', err);
+    res.status(500).json({ error: 'Internal server error' });
+});
+
+app.use((req, res) => {
+    res.status(404).json({ error: 'Route not found' });
+});
+
+// =====================
+// Start Server
+// =====================
+
 app.listen(port, () => {
-    console.log(`Server running on port ${port}`);
+    console.log(`🚀 HealthSymphony API Server running on port ${port}`);
+    console.log(`📊 Database: ${process.env.DATABASE_URL ? 'PostgreSQL (Render)' : 'Local'}`);
+    console.log(`🔐 Auth: JWT enabled`);
 });
